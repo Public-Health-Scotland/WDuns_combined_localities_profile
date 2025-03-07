@@ -136,23 +136,29 @@ markers_care_home <- care_homes %>%
 ###### 4. Table ######
 
 # Subset care which is not Elderly care for table
-other_care_type <- care_homes %>%
-  select(type = care_service, subtype, name = service_name, service_postcode) %>%
-  filter(type == "Care Home Service") %>%
-  filter(subtype != "Older People") %>%
-  mutate(postcode = gsub(" ", "", service_postcode)) %>%
-  left_join(postcode_lkp, by = "postcode") %>%
-  filter(hscp_locality == LOCALITY)
+other_care_type <- 
+  map(locality_list,
+    ~care_homes %>%
+    select(type = care_service, subtype, name = service_name, service_postcode) %>%
+    filter(type == "Care Home Service") %>%
+    filter(subtype != "Older People") %>%
+    mutate(postcode = gsub(" ", "", service_postcode)) %>%
+    left_join(postcode_lkp, by = "postcode") %>%
+    filter(hscp_locality == .x)
+  ) %>% set_names(locality_list)
 
 # Create table
-services_tibble <- tibble(
-  Type = c("**Primary Care**", "**A&E**", "", "**Care Home**", ""),
-  Service = c("GP Practice", "Emergency Department", "Minor Injuries Unit", "Elderly Care", "Other"),
-  Number = c(
-    nrow(filter(markers_gp, hscp_locality == LOCALITY)),
-    nrow(filter(markers_emergency_dep, hscp_locality == LOCALITY)),
-    nrow(filter(markers_miu, hscp_locality == LOCALITY)),
-    nrow(filter(markers_care_home, hscp_locality == LOCALITY)),
-    nrow(other_care_type)
-  )
-)
+services_tibble <- 
+  map(locality_list, 
+    ~tibble(
+    Type = c("**Primary Care**", "**A&E**", "", "**Care Home**", ""),
+    Service = c("GP Practice", "Emergency Department", "Minor Injuries Unit", "Elderly Care", "Other"),
+    Number = c(
+      nrow(filter(markers_gp, hscp_locality == .x)),
+      nrow(filter(markers_emergency_dep, hscp_locality == .x)),
+      nrow(filter(markers_miu, hscp_locality == .x)),
+      nrow(filter(markers_care_home, hscp_locality == .x)),
+      nrow(other_care_type[[.x]])
+    )
+    )
+) %>% set_names(locality_list)
