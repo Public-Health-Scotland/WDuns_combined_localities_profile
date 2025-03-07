@@ -28,11 +28,8 @@ library(data.table)
 # Change year to be the year in the data folder name
 ext_year <- 2024
 
-## Set Locality (for testing only)
-# LOCALITY <- "Falkirk West"
-
 ## Set file path
-# lp_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
+# data_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
 
 # Source in functions code
 # source("Master RMarkdown Document & Render Code/Global Script.R")
@@ -46,8 +43,8 @@ lookup <- read_in_localities(dz_level = TRUE)
 # Lookup without datazones
 lookup2 <- read_in_localities()
 
-## Determine HSCP
-HSCP <- as.character(filter(lookup2, hscp_locality == LOCALITY)$hscp2019name)
+## Determine HSCP - 
+#HSCP <- as.character(filter(lookup2, hscp_locality == LOCALITY)$hscp2019name)
 
 # Get number of localities in HSCP
 n_loc <- count_localities(lookup2, HSCP)
@@ -67,12 +64,13 @@ postcode_lkp <- read_in_postcodes() %>%
 
 ## Read in all data in services folder
 
-services_file_names <- list.files(paste0(lp_path, "Services/DATA ", ext_year), pattern = "RDS")
+services_file_names <- list.files(paste0(data_path, "Services/DATA ", ext_year), pattern = "RDS")
 
 for (file in services_file_names) {
+  
   name <- substr(x = file, 1, 4)
 
-  data <- readRDS(paste0(lp_path, "Services/DATA ", ext_year, "/", file)) %>%
+  data <- readRDS(paste0(data_path, "Services/DATA ", ext_year, "/", file)) %>%
     clean_names()
 
   assign(name, data)
