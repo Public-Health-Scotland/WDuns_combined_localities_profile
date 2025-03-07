@@ -319,7 +319,6 @@ service_map <- cowplot::plot_grid(service_map,
 # remove unnecessary objects
 rm(
   blank_leg,
-  Clacks_Royal,
   data,
   hosp_postcodes,
   hosp_types,
