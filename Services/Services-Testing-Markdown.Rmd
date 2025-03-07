@@ -13,18 +13,9 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 options(kableExtra.auto_format = FALSE)
 
-# Line below for testing only
-Loc <- "Teviot and Liddesdale"
-
-locality <- Loc
-LOCALITY <- Loc
-lp_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
-
-# stop(getwd())
-
-source("Master RMarkdown Document & Render Code/Global Script.R")
-source("Services/2. Services data manipulation & table.R")
-source("Services/3. Service HSCP map.R")
+source(here("Master RMarkdown Document & Render Code", "Global Script.R"))
+source(here("Services", "2. Services data manipulation & table.R"))
+source(here("Services","3. Service HSCP map.R"))
 
 x <- 1 # object for figure numbers
 y <- 1 # object for table numbers
@@ -46,11 +37,22 @@ x <- x + 1
 
 \newline
 
-#### Table `r y`: Number of each type of service in `r LOCALITY` Locality^2^.
+#### Table `r y`: Number of each type of service in `r locality_list[1]` Locality^2^.
 \newline
 
 ```{r echo = FALSE}
-knitr::kable(services_tibble, col.names = c("**Service Type**", "**Service**", "**Number**"))
+knitr::kable(services_tibble[[1]], col.names = c("**Service Type**", "**Service**", "**Number**"))
+
+y <- y + 1
+```
+
+\newline
+
+#### Table `r y`: Number of each type of service in `r locality_list[2]` Locality^2^.
+\newline
+
+```{r echo = FALSE}
+knitr::kable(services_tibble[[2]], col.names = c("**Service Type**", "**Service**", "**Number**"))
 
 y <- y + 1
 ```

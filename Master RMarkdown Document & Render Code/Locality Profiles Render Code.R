@@ -2,6 +2,7 @@
 
 library(knitr)
 library(rmarkdown)
+library(here)
 
 rm(list = ls())
 
@@ -12,7 +13,8 @@ Sys.umask("006")
 source("Master RMarkdown Document & Render Code/Global Script.R")
 
 # Set file path
-lp_path <- lp_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
+data_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
+lp_path <- "/conf/LIST_analytics/West Dunbartonshire/Locality Profiles Combined/"
 output_dir <- path(lp_path, "Master RMarkdown Document & Render Code", "Output")
 
 # Below creates locality list of all the localities in a chosen HSCP
@@ -24,15 +26,12 @@ lookup <- read_in_localities()
 # For a larger test, use the below to produce profiles for HSCPs likely to cause issues.
 # source("Master RMarkdown Document & Render Code/find_hscp_outliers.R")
 # hscp_list <- outlier_hscps
-hscp_list <- "Angus"
+HSCP <- "West Dunbartonshire"
 
 # NOTE - This checks that it exactly matches the lookup
-stopifnot(all(hscp_list %in% unique(lookup[["hscp2019name"]])))
+stopifnot(all(HSCP %in% unique(lookup[["hscp2019name"]])))
 
-# Loop over HSCP ----
-# 'looping' over one HSCP is fine.
-for (HSCP in hscp_list) {
-  # Create list of localities in chosen HSCP
+# list of localities 
   locality_list <- lookup |>
     filter(hscp2019name == HSCP) |>
     pull(hscp_locality)
@@ -45,15 +44,15 @@ for (HSCP in hscp_list) {
   # 1b. Run the Rmd for the main body of the profiles
   # 1c. Run the Rmd for the summary tables
 
-  loop_env <- c(ls(), "loop_env")
+ # loop_env <- c(ls(), "loop_env")
 
   # 1. Loop through each locality to create the main body of the profiles and the summary table
-  for (LOCALITY in locality_list) {
+#  for (LOCALITY in locality_list) {
     # 1a) Source in all the scripts for a given LOCALITY
 
     # Demographics ----
-    source("Demographics/1. Demographics - Population.R")
-    source("Demographics/2. Demographics - SIMD.R")
+    source(here("Demographics", "1. Demographics - Population.R"))
+    source(here("Demographics", "2. Demographics - SIMD.R"))
 
     # Housing ----
     source("Households/Households Code.R")
@@ -90,8 +89,8 @@ for (HSCP in hscp_list) {
 
     # End of loop housekeeping ----
     # Clean up the environment by restoring it to the 'pre-loop' state.
-    rm(list = setdiff(ls(), loop_env))
+ #   rm(list = setdiff(ls(), loop_env))
     # Force garbage collection to free up memory
     gc()
-  }
-}
+ # }
+#}
