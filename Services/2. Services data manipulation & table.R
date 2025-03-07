@@ -122,23 +122,6 @@ markers_emergency_dep <- hosp_lookup %>%
   filter(type == "Emergency Department") %>%
   filter(hscp2019name == HSCP)
 
-Clacks_Royal <- hosp_lookup %>%
-  filter(name == "Forth Valley Royal Hospital")
-
-# Ninewells hospital is incorrectly mapped even though postcode ok - so corrected coords here
-
-if (HSCP == "Dundee City") {
-  markers_emergency_dep <- markers_emergency_dep %>%
-    mutate(
-      latitude = if_else(latitude == 56.4617, 56.4659308, latitude),
-      longitude = if_else(longitude == -2.991432, -3.0378506, longitude)
-    )
-}
-
-if (HSCP == "Clackmannanshire & Stirling") {
-  markers_emergency_dep <- rbind(markers_emergency_dep, Clacks_Royal)
-}
-
 ## Care Homes ----
 
 markers_care_home <- care_homes %>%
