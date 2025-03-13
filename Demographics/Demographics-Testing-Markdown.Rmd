@@ -172,7 +172,10 @@ Of the `r pop_max_year` population in `r locality_list[2]`, **`r perc_bottom_qui
 ```{r echo = FALSE, fig.width = 8, warning = FALSE, fig.cap = 'A map of the locality which is broken down by data zones with the colouring showing the SIMD quintile for each.'}
 (simd_map[[1]] + simd_map[[2]]) +
   plot_layout(guides = "collect", axes = "collect")+
-  plot_annotation(caption = "Source: Scottish Government, Public Health Scotland")
+  plot_annotation(caption = "Source: Scottish Government, Public Health Scotland")&
+  theme(
+    legend.position = "bottom"
+  ) 
 
 x <- x + 1
 ```
