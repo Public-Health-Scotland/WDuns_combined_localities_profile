@@ -30,7 +30,7 @@ library(reshape2)
 
 # Set paths
 household_xlsx_path <- paste0(data_path, "Households/", "Data ", ext_year, "/household_estimates.xlsx")
-
+counciltax_xlsx_path <- paste0(data_path, "Households/", "Data ", ext_year, "/council_tax.xlsx")
 # Read in Global Script for RMarkdown (For testing only)
 # source("Master RMarkdown Document & Render Code/Global Script.R")
 
@@ -156,15 +156,22 @@ house_table <-
 
 # https://www.nrscotland.gov.uk/statistics-and-data/statistics/statistics-by-theme/households/household-estimates/small-area-statistics-on-households-and-dwellings
 
-house_raw_dat2 <- read_excel(paste0(lp_path, "Households/", "Data ", ext_year, "/council_tax.xlsx"),
-  sheet = as.character(max_year_housing), skip = 4
+ctb_sheet_titles <- 
+  excel_sheets(counciltax_xlsx_path) %>% 
+  str_subset(., "^\\d+$")
+
+# select latest year ctb
+house_raw_dat2 <- read_excel(counciltax_xlsx_path,
+  sheet = as.character(max(ctb_sheet_titles)), skip = 4
 ) %>%
   clean_names()
 
 # Filter and aggregate
 house_dat2 <- house_raw_dat2 %>%
-  filter(data_zone_code %in% lookup$datazone2011) %>%
-  select(5:14) %>%
+  left_join(lookup_dz, join_by(data_zone_code == datazone2011)) %>% 
+  filter(data_zone_code %in% lookup_dz$datazone2011) %>%
+  select(hscp_locality, 5:14) %>%
+  group_by(hscp_locality) %>% 
   summarise(across(everything(), sum))
 
 
