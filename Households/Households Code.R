@@ -107,7 +107,6 @@ house_dat1 <- house_dat %>%
   dplyr::ungroup() %>%
   dplyr::mutate(dplyr::across(3:7, list(perc = ~ 100 * .x / total_dwellings)))
 
-
 loc_text_value <- function(df = house_dat1, 
                                 loc = locality_list, 
                                 years = household_sheet_titles, 
