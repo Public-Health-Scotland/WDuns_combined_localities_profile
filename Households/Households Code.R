@@ -275,12 +275,12 @@ perc_houses_FH <-
 lookup2 <- read_in_localities(dz_level = FALSE)
 
 # Determine HSCP and HB based on Loc
-HSCP <- as.character(filter(lookup2, hscp_locality == LOCALITY)$hscp2019name)
+HSCP <- as.character(filter(lookup2, hscp_locality == locality_list[1])$hscp2019name)
 
 # Determine other localities based on LOCALITY object
 other_locs <- lookup2 %>%
   select(hscp_locality, hscp2019name) %>%
-  filter(hscp2019name == HSCP & hscp_locality != LOCALITY) %>%
+  filter(hscp2019name == HSCP & hscp_locality == locality_list[2]) %>%
   arrange(hscp_locality)
 
 # Find number of locs per partnership
@@ -411,3 +411,4 @@ scot_perc_housesFH <- format_number_for_text(sum(house_raw_dat2$council_tax_band
   house_raw_dat2$council_tax_band_h,
   na.rm = TRUE
 ) / sum(house_raw_dat2$total_number_of_dwellings, na.rm = TRUE) * 100)
+
