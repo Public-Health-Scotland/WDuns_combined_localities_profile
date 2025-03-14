@@ -13,7 +13,7 @@
 ### UPDATES
 ### Oct 2021  Aidan Morrison
 ### Sep 2022  Diane Wilson  Updated to use functions within Global Script and updated palette
-###
+### March 2025 Andrew Saul
 ###
 ### Contents:
 ### Section 1 - Packages, working directory etc
@@ -28,13 +28,8 @@
 library(readxl)
 library(reshape2)
 
-# Update Data Year (this is the maximum year available for both housing data sets from NRS)
-max_year_housing <- 2023
-
-
-
-# Set Directory.
-# lp_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
+# Set paths
+household_xlsx_path <- paste0(data_path, "Households/", "Data ", ext_year, "/household_estimates.xlsx")
 
 # Read in Global Script for RMarkdown (For testing only)
 # source("Master RMarkdown Document & Render Code/Global Script.R")
@@ -47,15 +42,13 @@ max_year_housing <- 2023
 ##################### Section 2 - Households Data #############################
 
 ## 2a) Data imports & cleaning ----
-household_xlsx_path <- paste0(data_path, "Households/", "Data ", ext_year, "/household_estimates.xlsx")
+
 # extract sheets with year names
 household_sheet_titles <- 
   excel_sheets(household_xlsx_path) %>% 
   str_subset(., "^\\d+$")
 
-
-  
-
+# Extract data for each year
 house_raw_dat <- 
   map(household_sheet_titles, ~read_excel(household_xlsx_path, 
                                 sheet = .x,
@@ -65,21 +58,6 @@ house_raw_dat <-
   bind_rows() %>% 
   clean_names() %>% 
   relocate(year)
-  
-
-# # get historic housing data, each year is on a separate sheet so do a for loop
-# for (i in 2014:max_year_housing) {
-#   temp <- read_excel(paste0(data_path, "Households/", "Data ", ext_year, "/household_estimates.xlsx"),
-#     sheet = paste(i), skip = 3
-#   ) %>%
-#     mutate(year = i) %>%
-#     clean_names() %>%
-#     select(year, 1:12)
-# 
-#   house_raw_dat <- rbind(house_raw_dat, temp)
-# }
-# 
-# rm(temp)
 
 # Global Script Function to read in Localities Lookup
 lookup_dz <- 
@@ -123,8 +101,6 @@ loc_text_value <- function(df = house_dat1,
 
 
 ## 2b) Text objects stored as lists, each containing the values from the two localities----
-
-
 # numbers
 n_houses <- loc_text_value(col_name = total_dwellings)
 n_occupied <- loc_text_value(col_name = occupied_dwellings)
@@ -139,21 +115,6 @@ perc_vacant <- loc_text_value(col_name = vacant_dwellings_perc)
 perc_single_discount <- loc_text_value(col_name = tax_discount_perc)
 perc_exempt <- loc_text_value(col_name = tax_exempt_perc)
 perc_second_homes <- loc_text_value(col_name = second_homes_perc)
-
-# # numbers
-# n_houses <- format_number_for_text(filter(house_dat1, year == max(year))$total_dwellings)
-# n_occupied <- format_number_for_text(filter(house_dat1, year == max(year))$occupied_dwellings)
-# n_vacant <- format_number_for_text(filter(house_dat1, year == max(year))$vacant_dwellings)
-# n_single_discount <- format_number_for_text(filter(house_dat1, year == max(year))$tax_discount)
-# n_exempt <- format_number_for_text(filter(house_dat1, year == max(year))$tax_exempt)
-# n_second_homes <- format_number_for_text(filter(house_dat1, year == max(year))$second_homes)
-# 
-# # percentages
-# perc_occupied <- format_number_for_text(filter(house_dat1, year == max(year))$occupied_dwellings_perc)
-# perc_vacant <- format_number_for_text(filter(house_dat1, year == max(year))$vacant_dwellings_perc)
-# perc_single_discount <- format_number_for_text(filter(house_dat1, year == max(year))$tax_discount_perc)
-# perc_exempt <- format_number_for_text(filter(house_dat1, year == max(year))$tax_exempt_perc)
-# perc_second_homes <- format_number_for_text(filter(house_dat1, year == max(year))$second_homes_perc)
 
 
 ## 2c) Plots and Tables ----
