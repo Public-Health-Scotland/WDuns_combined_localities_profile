@@ -229,17 +229,42 @@ ctb_table[[loc]] <-
 }
 
 ## Objects for locality
-perc_houses_AC <- format_number_for_text(sum(
-  house_dat2$council_tax_band_a,
-  house_dat2$council_tax_band_b,
-  house_dat2$council_tax_band_c
-) / house_dat2$total_number_of_dwellings * 100)
+calculate_perc_ctb <- function(df = house_dat2, 
+                           loc = locality_list, 
+                           col_names) {
+  map(loc,
+      ~filter(df, hscp_locality == .x) %>% 
+        select(total_number_of_dwellings, all_of(col_names)) %>%
+         pivot_longer(all_of(col_names)) %>% 
+        group_by(total_number_of_dwellings) %>% 
+         summarise(value = sum(value)) %>% 
+        mutate(perc = 100*value/total_number_of_dwellings) %>% 
+        pull(perc) %>% 
+        format_number_for_text()
+    #     format_number_for_text(.data$ctb_range_sum/total_number_of_dwellings * 100)) %>% 
+    # set_names(loc)
+    # 
+  ) %>% 
+    set_names(locality_list)
+}
 
-perc_houses_FH <- format_number_for_text(sum(
-  house_dat2$council_tax_band_f,
-  house_dat2$council_tax_band_g,
-  house_dat2$council_tax_band_h
-) / house_dat2$total_number_of_dwellings * 100)
+perc_houses_AC <-
+  calculate_perc_ctb(col_names = c("council_tax_band_a", "council_tax_band_b", "council_tax_band_c"))
+ 
+# format_number_for_text(sum(
+#   house_dat2$council_tax_band_a,
+#   house_dat2$council_tax_band_b,
+#   house_dat2$council_tax_band_c
+# ) / house_dat2$total_number_of_dwellings * 100)
+
+perc_houses_FH <- 
+  calculate_perc_ctb(col_names = c("council_tax_band_f", "council_tax_band_g", "council_tax_band_h"))
+  
+#   format_number_for_text(sum(
+#   house_dat2$council_tax_band_f,
+#   house_dat2$council_tax_band_g,
+#   house_dat2$council_tax_band_h
+# ) / house_dat2$total_number_of_dwellings * 100)
 
 
 ########################## Section 4 - Objects for Summary Table ########################
