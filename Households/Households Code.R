@@ -83,7 +83,7 @@ house_dat1 <- house_dat %>%
     tax_discount = sum(dwellings_with_a_single_adult_council_tax_discount)
   ) %>%
   dplyr::ungroup() %>%
-  dplyr::mutate(dplyr::across(3:7, list(perc = ~ 100 * .x / total_dwellings)))
+  dplyr::mutate(dplyr::across(3:8, list(perc = ~ 100 * .x / total_dwellings)))
 
 loc_text_value <- function(df = house_dat1, 
                                 loc = locality_list, 
