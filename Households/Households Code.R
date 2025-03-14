@@ -28,6 +28,8 @@
 library(readxl)
 library(reshape2)
 
+# Year on DATA folder
+ext_year <- 2024
 # Set paths
 household_xlsx_path <- paste0(data_path, "Households/", "Data ", ext_year, "/household_estimates.xlsx")
 counciltax_xlsx_path <- paste0(data_path, "Households/", "Data ", ext_year, "/council_tax.xlsx")
@@ -83,7 +85,8 @@ house_dat1 <- house_dat %>%
     tax_discount = sum(dwellings_with_a_single_adult_council_tax_discount)
   ) %>%
   dplyr::ungroup() %>%
-  dplyr::mutate(dplyr::across(3:8, list(perc = ~ 100 * .x / total_dwellings)))
+  dplyr::mutate(dplyr::across(3:8, list(perc = ~ 100 * .x / total_dwellings))) %>% 
+  ungroup()
 
 loc_text_value <- function(df = house_dat1, 
                                 loc = locality_list, 
