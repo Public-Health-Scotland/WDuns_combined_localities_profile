@@ -21,7 +21,7 @@ options(kableExtra.auto_format = FALSE)
 # LOCALITY <- "Skye, Lochalsh and West Ross"
 # LOCALITY <- "Ayr North and Former Coalfield Communities"
 
-source("Households/Households Code.R")
+source(here("Households","Households Code.R"))
 
 x <- 1 # object for figure numbers
 y <- 1 # object for table numbers
@@ -35,36 +35,62 @@ y <- 1 # object for table numbers
 
 \newline
 
-**For the most recent time periods available, `r LOCALITY` Locality had:**
+**For the most recent time periods available, `r locality_list[1]` Locality had:**
 
- - **`r n_houses`** dwellings, of which: **`r perc_occupied`%** were occupied and **`r perc_second_homes`%** were second homes.
- - **`r perc_single_discount`%** of dwellers received a single occupant council tax discount, and **`r perc_exempt`%** were exempt from council tax entirely.
- - **`r perc_houses_AC`%** of houses were within council tax bands A to C, and **`r perc_houses_FH`%** were in bands F to H.
+ - **`r n_houses[[1]]`** dwellings, of which: **`r perc_occupied[[1]]`%** were occupied and **`r perc_second_homes[[1]]`%** were second homes.
+ - **`r perc_single_discount[[1]]`%** of dwellers received a single occupant council tax discount, and **`r perc_exempt[[1]]`%** were exempt from council tax entirely.
+ - **`r perc_houses_AC[[1]]`%** of houses were within council tax bands A to C, and **`r perc_houses_FH[[1]]`%** were in bands F to H.
 
 \newline
 
-The graph below shows the number of dwellings in `r LOCALITY` from `r min(house_dat$year)` to `r max_year_housing`.
+**For the most recent time periods available, `r locality_list[2]` Locality had:**
 
-####Figure `r x`: Number of dwellings time trend.
+ - **`r n_houses[[2]]`** dwellings, of which: **`r perc_occupied[[2]]`%** were occupied and **`r perc_second_homes[[2]]`%** were second homes.
+ - **`r perc_single_discount[[2]]`%** of dwellers received a single occupant council tax discount, and **`r perc_exempt[[2]]`%** were exempt from council tax entirely.
+ - **`r perc_houses_AC[[2]]`%** of houses were within council tax bands A to C, and **`r perc_houses_FH[[2]]`%** were in bands F to H.
+
+\newline
+
+#### `r locality_list[1]`
+
+The graph below shows the number of dwellings in **`r locality_list[1]`** from `r min(household_sheet_titles)` to `r max(household_sheet_titles)`.
+
+####Figure `r x`: Number of dwellings time trend in `r locality_list[1]`.
 \newline
 
 ```{r echo = FALSE, fig.width = 7, fig.height = 3, warning = FALSE}
-houses_ts
+houses_ts[[1]]
 
 x <- x + 1
 ```
 
-Of the total number of dwellings in `r max_year_housing`, `r perc_single_discount`% (`r n_single_discount` households) were occupied by an individual receiving a single occupant council tax discount. Furthermore, `r perc_exempt`% (`r n_exempt` households) were occupied and exempt from council tax. 
+#### `r locality_list[2]`
 
-There were `r n_second_homes` dwellings classed as a second home in `r max_year_housing`, these dwellings made up `r perc_second_homes`% of the households in `r LOCALITY`.
+The graph below shows the number of dwellings in **`r locality_list[2]`** from `r min(household_sheet_titles)` to `r max(household_sheet_titles)`.
+
+####Figure `r x`: Number of dwellings time trend in `r locality_list[2]`.
+\newline
+
+```{r echo = FALSE, fig.width = 7, fig.height = 3, warning = FALSE}
+houses_ts[[2]]
+
+x <- x + 1
+```
+
+#### Dwellings
+##### `r locality_list[1]`
+
+Of the total number of dwellings in `r max(household_sheet_titles)`, `r perc_single_discount[[1]]`% (`r n_single_discount[[1]]` households) were occupied by an individual receiving a single occupant council tax discount. Furthermore, `r perc_exempt[[1]]`% (`r n_exempt[[1]]` households) were occupied and exempt from council tax. 
+
+There were `r n_second_homes[[1]]` dwellings classed as a second home in `r max(household_sheet_titles)`, these dwellings made up `r perc_second_homes[[1]]`% of the households in `r locality_list[[1]]`.
 
 #####Page break
 
-####Table `r y`: Breakdown of dwelling types by year for `r LOCALITY` locality.
+####Table `r y`: Breakdown of dwelling types by year for `r locality_list[1]` locality.
 \newline
 										
 ```{r echo = FALSE}
-knitr::kable(house_table,
+knitr::kable(house_table[[1]],
   col.names = c(
     "**Year**", "**Total Dwellings**", "**Occupied Dwellings**",
     "**Vacant Dwellings**", "**Single Occupant Tax Discount**", "**Council Tax Exempt Dwellings**", "**Second Homes**"
@@ -76,19 +102,38 @@ y <- y + 1
 ```
 
 \newline
+##### `r locality_list[2]`
+Of the total number of dwellings in `r max(household_sheet_titles)`, `r perc_single_discount[[2]]`% (`r n_single_discount[[2]]` households) were occupied by an individual receiving a single occupant council tax discount. Furthermore, `r perc_exempt[[2]]`% (`r n_exempt[[2]]` households) were occupied and exempt from council tax. 
+
+There were `r n_second_homes[[2]]` dwellings classed as a second home in `r max(household_sheet_titles)`, these dwellings made up `r perc_second_homes[[2]]`% of the households in `r locality_list[[2]]`.
+
+\newline
+										
+```{r echo = FALSE}
+knitr::kable(house_table[[2]],
+  col.names = c(
+    "**Year**", "**Total Dwellings**", "**Occupied Dwellings**",
+    "**Vacant Dwellings**", "**Single Occupant Tax Discount**", "**Council Tax Exempt Dwellings**", "**Second Homes**"
+  ),
+  align = c("l", "r", "r", "r", "r", "r", "r")
+)
+
+y <- y + 1
+```
+
 
 The proportion of households within each council tax band are displayed in the chart below, figures are shown in Table `r y`.
 
-####Figure `r x`: Breakdown of households by council tax band for `r LOCALITY` in `r max_year_housing`.
+####Figure `r x`: Breakdown of households by council tax band for `r locality_list[1]` in `r max(household_sheet_titles)`.
 \newline
 
 ```{r echo = FALSE, fig.width = 7, fig.height = 2, warning = FALSE}
-ctb_plot
+ctb_plot[[1]]
 
 x <- x + 1
 ```
 
-####Table `r y`: Percentage of households by council tax band for `r LOCALITY` in `r max_year_housing`.
+####Table `r y`: Percentage of households by council tax band for `r locality_list[2]` in `r max(household_sheet_titles)`.
 \newline
 
 ```{r echo = FALSE}
