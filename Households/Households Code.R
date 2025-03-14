@@ -178,28 +178,33 @@ house_dat2 <- house_raw_dat2 %>%
 ## 3b) Plots & tables ----
 
 ctb <- house_dat2 %>%
-  select(council_tax_band_a:council_tax_band_h) %>%
-  melt()
-
-variable <- ctb$variable
+  select(hscp_locality, council_tax_band_a:council_tax_band_h) %>%
+  pivot_longer(council_tax_band_a:council_tax_band_h) %>% 
+  mutate(name = str_extract(name, ".$") %>% str_to_upper(.))
 
 pal_ctb <- phsstyles::phs_colours(c(
   "phs-magenta", "phs-magenta-80", "phs-magenta-50", "phs-magenta-10",
   "phs-purple-30", "phs-purple-50", "phs-purple-80", "phs-purple"
 ))
 
-ctb_plot <- ctb %>%
+ctb_plot <- list()
+ctb_table <- list()
+
+for(loc in locality_list){
+
+ctb_plot[[loc]] <- 
+  filter(ctb, hscp_locality == loc) %>% 
   ggplot(aes(
     x = value,
     y = 1,
-    fill = factor(variable, levels = rev(variable))
+    fill = factor(name, levels = rev(name))
   )) +
-  geom_col(position = "fill", colour = "black", size = 0.5, orientation = "y") +
+  geom_col(position = "fill", colour = "black", linewidth = 0.5, orientation = "y") +
   theme_classic() +
   labs(x = "Proportion of Households", y = "", caption = "Source: Scottish Assessors’ Association (via NRS)") +
   scale_fill_manual(
     name = "Council Tax Band",
-    labels = paste("Band", LETTERS[8:1]),
+   # labels = paste("Band", LETTERS[8:1]),
     values = pal_ctb,
     drop = FALSE,
     guide = guide_legend(reverse = TRUE)
@@ -213,17 +218,15 @@ ctb_plot <- ctb %>%
     legend.box.background = element_rect(colour = "black")
   )
 
-ctb_table <- ctb %>%
+ctb_table[[loc]] <- 
+  filter(ctb, hscp_locality == loc) %>% 
   mutate(percent = paste0(format_number_for_text(100 * value / sum(value)), "%")) %>%
   select(-value) %>%
-  pivot_wider(names_from = variable, values_from = percent) %>%
+  pivot_wider(names_from = name, values_from = percent) %>%
   mutate(`Tax Band` = "Percent of households") %>%
-  select(`Tax Band`,
-    A = council_tax_band_a, B = council_tax_band_b,
-    C = council_tax_band_c, D = council_tax_band_d, E = council_tax_band_e,
-    `F` = council_tax_band_f, G = council_tax_band_g, H = council_tax_band_h
-  )
+  select(-hscp_locality)
 
+}
 
 ## Objects for locality
 perc_houses_AC <- format_number_for_text(sum(
