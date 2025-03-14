@@ -12,9 +12,12 @@ Sys.umask("006")
 # Source in functions code
 source("Master RMarkdown Document & Render Code/Global Script.R")
 
+
 # Set file path
+data_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
 lp_path <- "/conf/LIST_analytics/West Dunbartonshire/Locality Profiles Combined/"
 output_dir <- path(lp_path, "Master RMarkdown Document & Render Code", "Output")
+
 
 # Below creates locality list of all the localities in a chosen HSCP
 lookup <- read_in_localities()
@@ -57,11 +60,11 @@ for (HSCP in hscp_list) {
     source(here("Demographics", "2. Demographics - SIMD.R"))
 
     # Housing ----
-    source("Households/Households Code.R")
+    source(here("Households", "Households Code.R"))
 
     # Services ----
-    source("Services/2. Services data manipulation & table.R")
-    source("Services/3. Service HSCP map.R")
+    source(here("Services", "2. Services data manipulation & table.R"))
+    source(here("Services", "3. Service HSCP map.R"))
 
     # General Health ----
     source("General Health/3. General Health Outputs.R")
