@@ -107,7 +107,7 @@ places <- read_csv(paste0(
   filter(type != "hamlet" & type != "village") # remove smaller places
 
 # 3.3 Background map ----
-locality_map_id <- read_csv(paste0(lp_path, "Services/", "locality_map_id.csv"))
+locality_map_id <- read_csv(paste0(data_path, "Services/", "locality_map_id.csv"))
 api_key <- locality_map_id$id
 # upload map background from stadia maps, enter registration key, filter for max and min long/lat
 register_stadiamaps(key = api_key)
@@ -319,7 +319,6 @@ service_map <- cowplot::plot_grid(service_map,
 # remove unnecessary objects
 rm(
   blank_leg,
-  Clacks_Royal,
   data,
   hosp_postcodes,
   hosp_types,

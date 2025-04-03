@@ -13,6 +13,7 @@ Sys.umask("006")
 source("Master RMarkdown Document & Render Code/Global Script.R")
 
 # Set file path
+data_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
 lp_path <- "/conf/LIST_analytics/West Dunbartonshire/Locality Profiles Combined/"
 output_dir <- path(lp_path, "Master RMarkdown Document & Render Code", "Output")
 
@@ -25,19 +26,16 @@ lookup <- read_in_localities()
 # For a larger test, use the below to produce profiles for HSCPs likely to cause issues.
 # source("Master RMarkdown Document & Render Code/find_hscp_outliers.R")
 # hscp_list <- outlier_hscps
-hscp_list <- "West Dunbartonshire"
+HSCP <- "West Dunbartonshire"
 
 # NOTE - This checks that it exactly matches the lookup
-stopifnot(all(hscp_list %in% unique(lookup[["hscp2019name"]])))
+stopifnot(all(HSCP %in% unique(lookup[["hscp2019name"]])))
 
-# Loop over HSCP ----
-# 'looping' over one HSCP is fine.
-for (HSCP in hscp_list) {
-  # Create list of localities in chosen HSCP
+# list of localities 
   locality_list <- lookup |>
     filter(hscp2019name == HSCP) |>
     pull(hscp_locality)
-}
+
   # Loop to create the profiles for all the localities in the list
 
   # There are several stages to the profiles:
