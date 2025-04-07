@@ -29,8 +29,9 @@ ext_year <- 2024
 
 # Set file path
 # lp_path <- path("/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles")
+# data_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
 
-gen_health_data_dir <- path(lp_path, "General Health", glue("DATA {ext_year}"))
+gen_health_data_dir <- path(data_path, "General Health", glue("DATA {ext_year}"))
 
 ### Geographical lookups and objects ----
 
@@ -38,13 +39,13 @@ gen_health_data_dir <- path(lp_path, "General Health", glue("DATA {ext_year}"))
 lookup <- read_in_localities()
 
 # Determine HSCP and HB based on Locality
-HSCP <- filter(lookup, hscp_locality == LOCALITY)[["hscp2019name"]]
-HB <- filter(lookup, hscp_locality == LOCALITY)[["hb2019name"]]
+#HSCP <- filter(lookup, hscp_locality == locality_list[1])[["hscp2019name"]]
+HB <- filter(lookup, hscp_locality == locality_list[1])[["hb2019name"]]
 
 # Determine other localities based on LOCALITY object
 other_locs <- lookup %>%
   select(hscp_locality, hscp2019name) %>%
-  filter(hscp2019name == HSCP & hscp_locality != LOCALITY) %>%
+  filter(hscp2019name == HSCP & hscp_locality == locality_list[2]) %>%
   arrange(hscp_locality)
 
 # Find number of locs per partnership
@@ -162,9 +163,12 @@ latest_period_life_exp_otherareas <- unique(filter(life_exp, area_type == "Scotl
 
 
 # Create time trend
-life_exp_trend <- life_exp %>%
+life_exp_trend <- list()
+
+for(loc in locality_list){
+life_exp_trend[[loc]] <- life_exp %>%
   filter(
-    area_name == LOCALITY,
+    area_name == loc,
     area_type == "Locality",
     year >= max(year) - 10
   ) %>%
@@ -186,7 +190,7 @@ life_exp_trend <- life_exp %>%
   theme_profiles() +
   expand_limits(y = 0) +
   labs(
-    title = str_wrap(glue("Average Life Expectancy in {LOCALITY} locality"), width = 65),
+    title = str_wrap(glue("Average Life Expectancy in {loc} locality"), width = 65),
     x = "Year Groups (5-year aggregates)",
     y = str_wrap("Average Life Expectancy (in years)", width = 35),
     caption = "Source: ScotPHO"
@@ -196,13 +200,13 @@ life_exp_trend <- life_exp %>%
     linetype = "none", shape = "none",
     colour = guide_legend(override.aes = list(shape = c(21, 24), fill = palette[1:2]))
   )
-
+}
 
 # Make a table to compare with other areas
 
 life_exp_table <- life_exp %>%
   filter((year == latest_year_life_exp_loc &
-    (area_name == LOCALITY & area_type == "Locality")) |
+    (area_name %in% locality_list & area_type == "Locality")) |
     year == latest_year_life_exp_otherareas &
       ((area_name == HSCP & area_type == "HSCP") |
         area_name == HB | area_name == "Scotland")) %>%
@@ -219,7 +223,7 @@ life_exp_table <- life_exp %>%
 
 life_exp_table <- life_exp %>%
   filter((year == latest_year_life_exp_loc &
-    (area_name == LOCALITY & area_type == "Locality")) |
+    (area_name %in% locality_list & area_type == "Locality")) |
     year == latest_year_life_exp_otherareas &
       ((area_name == HSCP & area_type == "HSCP") |
         area_name == HB | area_name == "Scotland")) %>%
@@ -235,35 +239,41 @@ life_exp_table <- life_exp %>%
 
 
 ## Numbers for text
-locality_missing <- LOCALITY %in% check_missing_data_scotpho(life_exp)$area_name
+avg_life_exp_latest_male <- list()
+avg_life_exp_latest_fem <- list()
 
-avg_life_exp_latest_male <- ifelse(
+for (loc in locality_list){
+  
+locality_missing <- loc %in% check_missing_data_scotpho(life_exp)$area_name
+
+avg_life_exp_latest_male[[loc]] <- ifelse(
   locality_missing,
   NA_real_,
   filter(
     life_exp,
     sex == "Male",
     year == latest_year_life_exp_loc,
-    area_name == LOCALITY,
+    area_name == loc,
     area_type == "Locality"
   ) |>
     pull(measure) |>
     round_half_up(digits = 1)
 )
 
-avg_life_exp_latest_fem <- ifelse(
+avg_life_exp_latest_fem[[loc]] <- ifelse(
   locality_missing,
   NA_real_,
   filter(
     life_exp,
     sex == "Female",
     year == latest_year_life_exp_loc,
-    area_name == LOCALITY,
+    area_name == loc,
     area_type == "Locality"
   ) |>
     pull(measure) |>
     round_half_up(digits = 1)
 )
+}
 
 ##### 2b Deaths aged 15-44 #####
 
@@ -290,12 +300,7 @@ deaths_15_44_bar <- deaths_15_44 %>%
 
 
 ## Numbers for text
-deaths_15_44_latest <- filter(
-  deaths_15_44,
-  year == max(deaths_15_44$year),
-  area_name == LOCALITY,
-  area_type == "Locality"
-)$measure
+deaths_15_44_latest <- numbers_for_text(deaths_15_44)
 
 scot_deaths_15_44 <- filter(
   deaths_15_44,
@@ -305,6 +310,10 @@ scot_deaths_15_44 <- filter(
 
 deaths_15_44_diff_scot <- if_else(deaths_15_44_latest > scot_deaths_15_44, "higher", "lower")
 
+deaths_15_44_diff_scot <- map(locality_list,
+    ~if_else(deaths_15_44_latest[[.x]] > scot_deaths_15_44, "higher", "lower")%>% 
+  set_names(.x)
+)
 
 ##### 2c Cancer #####
 
@@ -325,19 +334,9 @@ cancer_reg_time_trend <- cancer_reg %>%
 
 
 ## Numbers for text
-cancer_reg_rate_latest <- filter(
-  cancer_reg,
-  year == max(cancer_reg$year),
-  area_name == LOCALITY,
-  area_type == "Locality"
-)$measure
+cancer_reg_rate_latest <- numbers_for_text(cancer_reg)
 
-cancer_reg_total_latest <- filter(
-  cancer_reg,
-  year == max(cancer_reg$year),
-  area_name == LOCALITY,
-  area_type == "Locality"
-)$numerator
+cancer_reg_total_latest <- numbers_for_text(cancer_reg, variable = "numerator")
 
 
 ### Early deaths from cancer
@@ -347,12 +346,7 @@ latest_period_early_deaths_cancer <- unique(filter(
   year == max(early_deaths_cancer$year)
 )$period_short)
 
-early_deaths_cancer_rate_latest <- filter(
-  early_deaths_cancer,
-  year == max(early_deaths_cancer$year),
-  area_name == LOCALITY,
-  area_type == "Locality"
-)$measure
+early_deaths_cancer_rate_latest <- numbers_for_text(early_deaths_cancer)
 
 ## Time trend for cancer deaths
 early_deaths_cancer_time_trend <- early_deaths_cancer %>%
@@ -365,19 +359,17 @@ early_deaths_cancer_time_trend <- early_deaths_cancer %>%
 
 
 ## Figures for text
-early_deaths_cancer_rate_earliest <- filter(
-  early_deaths_cancer,
-  year == (max(early_deaths_cancer$year) - 10),
-  area_name == LOCALITY,
-  area_type == "Locality"
-)$measure
+early_deaths_cancer_rate_earliest <- numbers_for_text_earliest(early_deaths_cancer)
+cancer_deaths_perc_change <- list()
+cancer_deaths_changeword <- list()
 
-cancer_deaths_perc_change <- abs((early_deaths_cancer_rate_latest - early_deaths_cancer_rate_earliest) * 100 / early_deaths_cancer_rate_earliest)
+for (loc in locality_list){
+cancer_deaths_perc_change[[loc]] <- abs((early_deaths_cancer_rate_latest[[loc]] - early_deaths_cancer_rate_earliest[[loc]]) * 100 / early_deaths_cancer_rate_earliest[[loc]])
 
-cancer_deaths_changeword <- if_else(early_deaths_cancer_rate_latest > early_deaths_cancer_rate_earliest,
+cancer_deaths_changeword[[loc]] <- if_else(early_deaths_cancer_rate_latest[[loc]] > early_deaths_cancer_rate_earliest[[loc]],
   "increase", "decrease"
 )
-
+}
 
 ##### 2d Hospitalisations from diseases #####
 
@@ -386,7 +378,7 @@ disease_hosp <- bind_rows(
   filter(chd_hosp, year == max(year)),
   filter(copd_hosp, year == max(year))
 ) %>%
-  filter((area_name == LOCALITY & area_type == "Locality") |
+  filter((area_name %in% locality_list & area_type == "Locality") |
     (area_name == HSCP & area_type == "HSCP") |
     area_name == HB |
     area_name == "Scotland") %>%
@@ -401,17 +393,21 @@ disease_hosp <- bind_rows(
   )) %>%
   mutate(measure = round_half_up(measure, 1))
 
-highest_hosp_disease <- disease_hosp %>%
+highest_hosp_disease <- list()
+
+for (loc in locality_list){
+  highest_hosp_disease[[loc]] <- disease_hosp %>%
   filter(
-    area_name == LOCALITY,
+    area_name == loc,
     area_type == "Locality"
   ) %>%
   filter(measure == max(measure))
+}
 
 disease_hosp_table <- disease_hosp |>
   mutate(
     area_order = case_when(
-      area_name == LOCALITY ~ 1L,
+      area_name %in% locality_list ~ 1L,
       area_name == HSCP ~ 2L,
       str_starts(area_name, "NHS") ~ 4L,
       area_name == "Scotland" ~ 5L,
@@ -459,22 +455,9 @@ adp_presc_bar <- adp_presc %>%
 
 ## Numbers for text
 
-adp_presc_latest <- filter(
-  adp_presc,
-  year == max(adp_presc$year),
-  area_name == LOCALITY,
-  area_type == "Locality"
-)$measure
+adp_presc_latest <- numbers_for_text(adp_presc)
 
-adp_presc_earliest <- filter(
-  adp_presc,
-  year == (max(adp_presc$year) - 10),
-  area_name == LOCALITY,
-  area_type == "Locality"
-)$measure
-
-adp_presc_perc_change <- abs((adp_presc_latest - adp_presc_earliest) * 100 / adp_presc_earliest)
-adp_presc_changeword <- if_else(adp_presc_latest > adp_presc_earliest, "increase", "decrease")
+adp_presc_earliest <- numbers_for_text_earliest(adp_presc)
 
 scot_adp_presc <- filter(
   adp_presc,
@@ -482,9 +465,16 @@ scot_adp_presc <- filter(
   area_name == "Scotland"
 )$measure
 
-adp_presc_diff_scot <- if_else(adp_presc_latest > scot_adp_presc, "larger", "smaller")
-
-
+adp_presc_perc_change <- list()
+adp_presc_changeword <- list()
+adp_presc_diff_scot <- list()
+  
+for (loc in locality_list){
+  adp_presc_perc_change[[loc]] <- abs((adp_presc_latest[[loc]] - adp_presc_earliest[[loc]]) * 100 / adp_presc_earliest[[loc]])
+  adp_presc_changeword[[loc]] <- if_else(adp_presc_latest[[loc]] > adp_presc_earliest[[loc]], "increase", "decrease")
+  adp_presc_diff_scot[[loc]] <- if_else(adp_presc_latest[[loc]] > scot_adp_presc, "larger", "smaller")
+  
+}
 
 ############################ 3) SLF DATA (LTCs) ####################################
 
@@ -493,7 +483,7 @@ slf_pops <- ltc |>
   distinct(age_group, hscp_locality, hscp2019name, slf_adj_pop)
 
 slf_pop_loc <- slf_pops %>%
-  filter(hscp_locality == LOCALITY)
+  filter(hscp_locality %in% locality_list)
 
 # Determine year
 latest_year_ltc <- ltc[["year"]][1]
@@ -510,17 +500,17 @@ ltc_scot <- ltc %>%
 
 # Load images
 # under 65
-ppl_bold_u65 <- readPNG(path(lp_path, "General Health", "infographics", "people bold under 65.png"))
-ppl_faint_u65 <- readPNG(path(lp_path, "General Health", "infographics", "people faint under 65.png"))
+ppl_bold_u65 <- readPNG(path(data_path, "General Health", "infographics", "people bold under 65.png"))
+ppl_faint_u65 <- readPNG(path(data_path, "General Health", "infographics", "people faint under 65.png"))
 # 65-74
-ppl_bold_6574 <- readPNG(path(lp_path, "General Health", "infographics", "people bold 65-74.png"))
-ppl_faint_6574 <- readPNG(path(lp_path, "General Health", "infographics", "people faint 65-74.png"))
+ppl_bold_6574 <- readPNG(path(data_path, "General Health", "infographics", "people bold 65-74.png"))
+ppl_faint_6574 <- readPNG(path(data_path, "General Health", "infographics", "people faint 65-74.png"))
 # 75-84
-ppl_bold_7584 <- readPNG(path(lp_path, "General Health", "infographics", "people bold 75-84.png"))
-ppl_faint_7584 <- readPNG(path(lp_path, "General Health", "infographics", "people faint 75-84.png"))
+ppl_bold_7584 <- readPNG(path(data_path, "General Health", "infographics", "people bold 75-84.png"))
+ppl_faint_7584 <- readPNG(path(data_path, "General Health", "infographics", "people faint 75-84.png"))
 # over 85
-ppl_bold_o85 <- readPNG(path(lp_path, "General Health", "infographics", "people bold over 85.png"))
-ppl_faint_o85 <- readPNG(path(lp_path, "General Health", "infographics", "people faint over 85.png"))
+ppl_bold_o85 <- readPNG(path(data_path, "General Health", "infographics", "people bold over 85.png"))
+ppl_faint_o85 <- readPNG(path(data_path, "General Health", "infographics", "people faint over 85.png"))
 
 # LTC infographic waffle chart
 create_infographic <- function(image1, image2, perc_ltc, col, age_label1, age_label2) {

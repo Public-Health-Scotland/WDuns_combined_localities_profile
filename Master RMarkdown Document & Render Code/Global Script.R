@@ -266,13 +266,32 @@ clean_scotpho_dat <- function(data) {
     )
 }
 
+## Numbers for text function for ScotPHO data ----
+
+# extracts numbers from data to be used in text
+
+numbers_for_text <- function(df, loc = locality_list, variable = "measure") {
+  map(loc,
+      ~filter(df, area_name == .x, area_type == "Locality",
+              year == max(df$year)) %>% 
+        pull(variable))%>% 
+    set_names(loc)
+}
+
+numbers_for_text_earliest <- function(df, loc = locality_list, variable = "measure") {
+  map(loc,
+      ~filter(df, area_name == .x, area_type == "Locality",
+              year == (max(df$year) - 10)) %>% 
+        pull(variable))%>% 
+    set_names(loc)
+}
 ## Time trend function for ScotPHO data ----
 
 # Creates a time trend for chosen locality, HSCP, HB and Scotland with confidence interval ribbons
 # Data must first be cleaned using clean_scotpho_dat function
 # Uses variable "period_short" which must be created - this is a shortened version of the "period" column in ScotPHO data
 # ex: mutate(period_short = gsub("to", "-", substr(period, 1, 12)))
-# Uses objects "LOCALITY", "HSCP" and "HB" to filter - these must be specified earlier in script
+# Uses objects "locality_list", "HSCP" and "HB" to filter - these must be specified earlier in script
 
 # Arguments:
 # data: data to use for chart
@@ -291,7 +310,7 @@ scotpho_time_trend <- function(data, chart_title, xaxis_title, yaxis_title, stri
 
   # filter and reorder data
   data %>%
-    filter((area_name == LOCALITY & area_type == "Locality") |
+    filter((area_name %in% locality_list & area_type == "Locality") |
       (area_name == HSCP & area_type == "HSCP") |
       area_name == HB |
       area_name == "Scotland") %>%
@@ -388,7 +407,7 @@ scotpho_time_trend_HSCP <- function(data, chart_title, xaxis_title, yaxis_title,
 # Creates a horizontal bar chart comparing the last time period of data across
 # all localities in a partnership, the HSCP, HB, and Scotland
 # Data must first be cleaned using clean_scotpho_dat function
-# Uses object "LOCALITY" and vector "other_locs" (other localities in HSCP) to filter
+# Uses object locality_list to filter
 # these must be specified earlier in script
 
 # Arguments:
@@ -400,13 +419,13 @@ scotpho_bar_chart <- function(data, chart_title, xaxis_title) {
   data_for_plot <- data %>%
     filter(year == max(year)) %>%
     filter(
-      (area_name %in% c(LOCALITY, other_locs$hscp_locality) & area_type == "Locality") |
+      (area_name %in% c(locality_list) & area_type == "Locality") |
         (area_name == HSCP & area_type == "HSCP") |
         area_name == HB |
         area_name == "Scotland"
     ) %>%
     mutate(
-      text_highlight = area_name == LOCALITY,
+      text_highlight = area_name %in% locality_list,
       area_type = factor(area_type, levels = c("Locality", "HSCP", "Health board", "Scotland")),
       area_name = fct_reorder(as.factor(str_wrap(area_name, 28)), measure)
     ) %>%
