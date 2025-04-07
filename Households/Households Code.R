@@ -13,7 +13,7 @@
 ### UPDATES
 ### Oct 2021  Aidan Morrison
 ### Sep 2022  Diane Wilson  Updated to use functions within Global Script and updated palette
-###
+### March 2025 Andrew Saul
 ###
 ### Contents:
 ### Section 1 - Packages, working directory etc
@@ -28,14 +28,11 @@
 library(readxl)
 library(reshape2)
 
-# Update Data Year (this is the maximum year available for both housing data sets from NRS)
-max_year_housing <- 2023
-# Update Publication Year (the year marked on the Data folder)
+# Year on DATA folder
 ext_year <- 2024
-
-# Set Directory.
-# lp_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
-
+# Set paths
+household_xlsx_path <- paste0(data_path, "Households/", "Data ", ext_year, "/household_estimates.xlsx")
+counciltax_xlsx_path <- paste0(data_path, "Households/", "Data ", ext_year, "/council_tax.xlsx")
 # Read in Global Script for RMarkdown (For testing only)
 # source("Master RMarkdown Document & Render Code/Global Script.R")
 
@@ -48,34 +45,37 @@ ext_year <- 2024
 
 ## 2a) Data imports & cleaning ----
 
-house_raw_dat <- data.frame()
+# extract sheets with year names
+household_sheet_titles <- 
+  excel_sheets(household_xlsx_path) %>% 
+  str_subset(., "^\\d+$")
 
-# get historic housing data, each year is on a separate sheet so do a for loop
-for (i in 2014:max_year_housing) {
-  temp <- read_excel(paste0(lp_path, "Households/", "Data ", ext_year, "/household_estimates.xlsx"),
-    sheet = paste(i), skip = 3
-  ) %>%
-    mutate(year = i) %>%
-    clean_names() %>%
-    select(year, 1:12)
-
-  house_raw_dat <- rbind(house_raw_dat, temp)
-}
-
-rm(temp)
+# Extract data for each year
+house_raw_dat <- 
+  map(household_sheet_titles, ~read_excel(household_xlsx_path, 
+                                sheet = .x,
+                                skip = 3) %>% 
+        mutate(year = as.numeric(.x))
+      ) %>% 
+  bind_rows() %>% 
+  clean_names() %>% 
+  relocate(year)
 
 # Global Script Function to read in Localities Lookup
-lookup <- read_in_localities(dz_level = TRUE) %>%
-  dplyr::select(datazone2011, hscp_locality) %>%
-  filter(hscp_locality == LOCALITY)
+lookup_dz <- 
+  read_in_localities(dz_level = TRUE) %>%
+  select(datazone2011, hscp_locality) %>%
+  filter(hscp_locality %in% locality_list)
 
 
-# filter housing data for locality of interest
-house_dat <- house_raw_dat %>% filter(data_zone_code %in% lookup$datazone2011)
+# filter housing data for locality of interest and save locality column
+house_dat <- house_raw_dat %>% 
+  left_join(lookup_dz, join_by(data_zone_code == datazone2011)) %>% 
+  filter(data_zone_code %in% lookup_dz$datazone2011)
 
 # aggregate data
 house_dat1 <- house_dat %>%
-  dplyr::group_by(year) %>%
+  dplyr::group_by(year, hscp_locality) %>%
   dplyr::summarise(
     total_dwellings = sum(total_number_of_dwellings),
     occupied_dwellings = sum(occupied_dwellings),
@@ -85,53 +85,77 @@ house_dat1 <- house_dat %>%
     tax_discount = sum(dwellings_with_a_single_adult_council_tax_discount)
   ) %>%
   dplyr::ungroup() %>%
-  dplyr::mutate(dplyr::across(3:7, list(perc = ~ 100 * .x / total_dwellings)))
+  dplyr::mutate(dplyr::across(3:8, list(perc = ~ 100 * .x / total_dwellings))) %>% 
+  ungroup()
+
+loc_text_value <- function(df = house_dat1, 
+                                loc = locality_list, 
+                                years = household_sheet_titles, 
+                                col_name) {
+  max_year <- max(years) # latest sheet year
+  map(loc,
+      ~filter(df, hscp_locality == .x,
+              year == max_year) %>% 
+        pull({{col_name}}) %>% 
+        format_number_for_text()) %>% 
+    set_names(loc)
+  
+}
 
 
-## 2b) Text objects ----
-
+## 2b) Text objects stored as lists, each containing the values from the two localities----
 # numbers
-n_houses <- format_number_for_text(filter(house_dat1, year == max(year))$total_dwellings)
-n_occupied <- format_number_for_text(filter(house_dat1, year == max(year))$occupied_dwellings)
-n_vacant <- format_number_for_text(filter(house_dat1, year == max(year))$vacant_dwellings)
-n_single_discount <- format_number_for_text(filter(house_dat1, year == max(year))$tax_discount)
-n_exempt <- format_number_for_text(filter(house_dat1, year == max(year))$tax_exempt)
-n_second_homes <- format_number_for_text(filter(house_dat1, year == max(year))$second_homes)
+n_houses <- loc_text_value(col_name = total_dwellings)
+n_occupied <- loc_text_value(col_name = occupied_dwellings)
+n_vacant <- loc_text_value(col_name = vacant_dwellings)
+n_single_discount <- loc_text_value(col_name = tax_discount)
+n_exempt <- loc_text_value(col_name = tax_exempt)
+n_second_homes <- loc_text_value(col_name = second_homes)
 
 # percentages
-perc_occupied <- format_number_for_text(filter(house_dat1, year == max(year))$occupied_dwellings_perc)
-perc_vacant <- format_number_for_text(filter(house_dat1, year == max(year))$vacant_dwellings_perc)
-perc_single_discount <- format_number_for_text(filter(house_dat1, year == max(year))$tax_discount_perc)
-perc_exempt <- format_number_for_text(filter(house_dat1, year == max(year))$tax_exempt_perc)
-perc_second_homes <- format_number_for_text(filter(house_dat1, year == max(year))$second_homes_perc)
+perc_occupied <- loc_text_value(col_name = occupied_dwellings_perc)
+perc_vacant <- loc_text_value(col_name = vacant_dwellings_perc)
+perc_single_discount <- loc_text_value(col_name = tax_discount_perc)
+perc_exempt <- loc_text_value(col_name = tax_exempt_perc)
+perc_second_homes <- loc_text_value(col_name = second_homes_perc)
 
 
 ## 2c) Plots and Tables ----
+# time series function for households and council tax
+plot_household_ts <- function(df, yname) {
+  df %>%
+    mutate(hscp_locality = factor(hscp_locality, levels = locality_list)) %>%
+    ggplot(aes(x = year, y = {{yname}}, group = hscp_locality)) +
+    geom_line(aes(color = hscp_locality), linewidth = 1) +
+    geom_point(aes(colour = hscp_locality))+
+    theme_profiles() +
+    geom_text(aes(label = format({{yname}}, big.mark = ","), vjust = ifelse(hscp_locality == locality_list[1], 2, -1)),color = "#4a4a4a", size = 3.5
+    ) +
+    scale_y_continuous(labels = scales::comma, limits = c(0, 1.1 * max(df %>% select({{yname}})))) +
+    scale_colour_manual(values = setNames(unname(phs_colors()[1:2]), locality_list)
+    )
+  
+}
 
 # Total dwellings over time
-houses_ts <- ggplot(house_dat1, aes(x = year, y = total_dwellings, group = 1)) +
-  geom_line(linewidth = 1, colour = "#3F3685") +
-  theme_profiles() +
-  geom_point(color = "#3F3685") +
-  geom_text(aes(label = format(total_dwellings, big.mark = ",")),
-    vjust = 2, color = "#4a4a4a", size = 3.5
-  ) +
-  scale_y_continuous(labels = scales::comma, limits = c(0, 1.1 * max(house_dat1$total_dwellings))) +
+houses_ts <- 
+  plot_household_ts(house_dat1, total_dwellings)+
   labs(
     x = "Year", y = "Number of Dwellings",
-    title = paste0("Number of Dwellings by Year in ", str_wrap(`LOCALITY`, 40), " ", max_year_housing),
+    title = paste0("Number of Dwellings by Year by Locality ", max(house_dat1$year)),
     caption = "Source: Council Tax billing system (via NRS)"
   ) +
   theme(plot.title = element_text(size = 12))
 
-
 # Table
-house_table <- house_dat1 %>%
-  select(
-    year, total_dwellings, occupied_dwellings, vacant_dwellings,
-    tax_discount, tax_exempt, second_homes
-  ) %>%
+house_table <- 
+  map(locality_list,
+      ~filter(house_dat1, hscp_locality == .x) %>%
+        select(year, total_dwellings, occupied_dwellings, vacant_dwellings,
+               tax_discount, tax_exempt, second_homes) %>%
   mutate(across(2:7, ~ format(.x, big.mark = ",")))
+  ) %>% 
+  set_names(locality_list)
 
 
 ######################## Section 3 - Council Tax Band Data ############################
@@ -140,43 +164,56 @@ house_table <- house_dat1 %>%
 
 # https://www.nrscotland.gov.uk/statistics-and-data/statistics/statistics-by-theme/households/household-estimates/small-area-statistics-on-households-and-dwellings
 
-house_raw_dat2 <- read_excel(paste0(lp_path, "Households/", "Data ", ext_year, "/council_tax.xlsx"),
-  sheet = as.character(max_year_housing), skip = 4
+ctb_sheet_titles <- 
+  excel_sheets(counciltax_xlsx_path) %>% 
+  str_subset(., "^\\d+$")
+
+# select latest year ctb
+house_raw_dat2 <- read_excel(counciltax_xlsx_path,
+  sheet = as.character(max(ctb_sheet_titles)), skip = 4
 ) %>%
   clean_names()
 
 # Filter and aggregate
 house_dat2 <- house_raw_dat2 %>%
-  filter(data_zone_code %in% lookup$datazone2011) %>%
-  select(5:14) %>%
+  left_join(lookup_dz, join_by(data_zone_code == datazone2011)) %>% 
+  filter(data_zone_code %in% lookup_dz$datazone2011) %>%
+  select(hscp_locality, 5:14) %>%
+  group_by(hscp_locality) %>% 
   summarise(across(everything(), sum))
 
 
 ## 3b) Plots & tables ----
 
 ctb <- house_dat2 %>%
-  select(council_tax_band_a:council_tax_band_h) %>%
-  melt()
-
-variable <- ctb$variable
+  select(hscp_locality, council_tax_band_a:council_tax_band_h) %>%
+  pivot_longer(council_tax_band_a:council_tax_band_h) %>% 
+  mutate(name = str_extract(name, ".$") %>% str_to_upper(.))
 
 pal_ctb <- phsstyles::phs_colours(c(
   "phs-magenta", "phs-magenta-80", "phs-magenta-50", "phs-magenta-10",
   "phs-purple-30", "phs-purple-50", "phs-purple-80", "phs-purple"
 ))
 
-ctb_plot <- ctb %>%
+ctb_plot <- list()
+ctb_table <- list()
+
+for(loc in locality_list){
+
+ctb_plot[[loc]] <- 
+  filter(ctb, hscp_locality == loc) %>% 
   ggplot(aes(
     x = value,
     y = 1,
-    fill = factor(variable, levels = rev(variable))
+    fill = factor(name, levels = rev(name))
   )) +
-  geom_col(position = "fill", colour = "black", size = 0.5, orientation = "y") +
+  geom_col(position = "fill", colour = "black", linewidth = 0.5, orientation = "y") +
   theme_classic() +
-  labs(x = "Proportion of Households", y = "", caption = "Source: Scottish Assessors’ Association (via NRS)") +
+  labs(x = paste0("Proportion of Households for ", loc), y = ""#, caption = "Source: Scottish Assessors’ Association (via NRS)"
+       )+
   scale_fill_manual(
     name = "Council Tax Band",
-    labels = paste("Band", LETTERS[8:1]),
+   # labels = paste("Band", LETTERS[8:1]),
     values = pal_ctb,
     drop = FALSE,
     guide = guide_legend(reverse = TRUE)
@@ -190,30 +227,53 @@ ctb_plot <- ctb %>%
     legend.box.background = element_rect(colour = "black")
   )
 
-ctb_table <- ctb %>%
+ctb_table[[loc]] <- 
+  filter(ctb, hscp_locality == loc) %>% 
   mutate(percent = paste0(format_number_for_text(100 * value / sum(value)), "%")) %>%
   select(-value) %>%
-  pivot_wider(names_from = variable, values_from = percent) %>%
+  pivot_wider(names_from = name, values_from = percent) %>%
   mutate(`Tax Band` = "Percent of households") %>%
-  select(`Tax Band`,
-    A = council_tax_band_a, B = council_tax_band_b,
-    C = council_tax_band_c, D = council_tax_band_d, E = council_tax_band_e,
-    `F` = council_tax_band_f, G = council_tax_band_g, H = council_tax_band_h
-  )
+  select(-hscp_locality)
 
+}
 
 ## Objects for locality
-perc_houses_AC <- format_number_for_text(sum(
-  house_dat2$council_tax_band_a,
-  house_dat2$council_tax_band_b,
-  house_dat2$council_tax_band_c
-) / house_dat2$total_number_of_dwellings * 100)
+calculate_perc_ctb <- function(df = house_dat2, 
+                           loc = locality_list, 
+                           col_names) {
+  map(loc,
+      ~filter(df, hscp_locality == .x) %>% 
+        select(total_number_of_dwellings, all_of(col_names)) %>%
+         pivot_longer(all_of(col_names)) %>% 
+        group_by(total_number_of_dwellings) %>% 
+         summarise(value = sum(value)) %>% 
+        mutate(perc = 100*value/total_number_of_dwellings) %>% 
+        pull(perc) %>% 
+        format_number_for_text()
+    #     format_number_for_text(.data$ctb_range_sum/total_number_of_dwellings * 100)) %>% 
+    # set_names(loc)
+    # 
+  ) %>% 
+    set_names(locality_list)
+}
 
-perc_houses_FH <- format_number_for_text(sum(
-  house_dat2$council_tax_band_f,
-  house_dat2$council_tax_band_g,
-  house_dat2$council_tax_band_h
-) / house_dat2$total_number_of_dwellings * 100)
+perc_houses_AC <-
+  calculate_perc_ctb(col_names = c("council_tax_band_a", "council_tax_band_b", "council_tax_band_c"))
+ 
+# format_number_for_text(sum(
+#   house_dat2$council_tax_band_a,
+#   house_dat2$council_tax_band_b,
+#   house_dat2$council_tax_band_c
+# ) / house_dat2$total_number_of_dwellings * 100)
+
+perc_houses_FH <- 
+  calculate_perc_ctb(col_names = c("council_tax_band_f", "council_tax_band_g", "council_tax_band_h"))
+  
+#   format_number_for_text(sum(
+#   house_dat2$council_tax_band_f,
+#   house_dat2$council_tax_band_g,
+#   house_dat2$council_tax_band_h
+# ) / house_dat2$total_number_of_dwellings * 100)
 
 
 ########################## Section 4 - Objects for Summary Table ########################
@@ -224,12 +284,12 @@ perc_houses_FH <- format_number_for_text(sum(
 lookup2 <- read_in_localities(dz_level = FALSE)
 
 # Determine HSCP and HB based on Loc
-HSCP <- as.character(filter(lookup2, hscp_locality == LOCALITY)$hscp2019name)
+HSCP <- as.character(filter(lookup2, hscp_locality == locality_list[1])$hscp2019name)
 
 # Determine other localities based on LOCALITY object
 other_locs <- lookup2 %>%
   select(hscp_locality, hscp2019name) %>%
-  filter(hscp2019name == HSCP & hscp_locality != LOCALITY) %>%
+  filter(hscp2019name == HSCP & hscp_locality == locality_list[2]) %>%
   arrange(hscp_locality)
 
 # Find number of locs per partnership
@@ -360,3 +420,4 @@ scot_perc_housesFH <- format_number_for_text(sum(house_raw_dat2$council_tax_band
   house_raw_dat2$council_tax_band_h,
   na.rm = TRUE
 ) / sum(house_raw_dat2$total_number_of_dwellings, na.rm = TRUE) * 100)
+
