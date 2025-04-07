@@ -121,26 +121,31 @@ perc_second_homes <- loc_text_value(col_name = second_homes_perc)
 
 
 ## 2c) Plots and Tables ----
+# time series function for households and council tax
+plot_household_ts <- function(df, yname) {
+  df %>%
+    mutate(hscp_locality = factor(hscp_locality, levels = locality_list)) %>%
+    ggplot(aes(x = year, y = {{yname}}, group = hscp_locality)) +
+    geom_line(aes(color = hscp_locality), linewidth = 1) +
+    geom_point(aes(colour = hscp_locality))+
+    theme_profiles() +
+    geom_text(aes(label = format({{yname}}, big.mark = ","), vjust = ifelse(hscp_locality == locality_list[1], 2, -1)),color = "#4a4a4a", size = 3.5
+    ) +
+    scale_y_continuous(labels = scales::comma, limits = c(0, 1.1 * max(df %>% select({{yname}})))) +
+    scale_colour_manual(values = setNames(unname(phs_colors()[1:2]), locality_list)
+    )
+  
+}
 
 # Total dwellings over time
-houses_ts <- list()
-for (loc in locality_list){
-houses_ts[[loc]] <- ggplot(house_dat1 %>% filter(hscp_locality == loc), 
-                    aes(x = year, y = total_dwellings, group = 1)) +
-  geom_line(linewidth = 1, colour = "#3F3685") +
-  theme_profiles() +
-  geom_point(color = "#3F3685") +
-  geom_text(aes(label = format(total_dwellings, big.mark = ",")),
-    vjust = 2, color = "#4a4a4a", size = 3.5
-  ) +
-  scale_y_continuous(labels = scales::comma, limits = c(0, 1.1 * max(house_dat1$total_dwellings))) +
+houses_ts <- 
+  plot_household_ts(house_dat1, total_dwellings)+
   labs(
     x = "Year", y = "Number of Dwellings",
-    title = paste0("Number of Dwellings by Year in ", str_wrap(`loc`, 40), " ", max(household_sheet_titles)),
+    title = paste0("Number of Dwellings by Year by Locality ", max(house_dat1$year)),
     caption = "Source: Council Tax billing system (via NRS)"
   ) +
   theme(plot.title = element_text(size = 12))
-}
 
 # Table
 house_table <- 
@@ -204,7 +209,8 @@ ctb_plot[[loc]] <-
   )) +
   geom_col(position = "fill", colour = "black", linewidth = 0.5, orientation = "y") +
   theme_classic() +
-  labs(x = "Proportion of Households", y = "", caption = "Source: Scottish Assessors’ Association (via NRS)") +
+  labs(x = paste0("Proportion of Households for ", loc), y = ""#, caption = "Source: Scottish Assessors’ Association (via NRS)"
+       )+
   scale_fill_manual(
     name = "Council Tax Band",
    # labels = paste("Band", LETTERS[8:1]),

@@ -31,7 +31,7 @@ y <- 1 # object for table numbers
 
 ## Households
 
-###Summary:
+### Summary:
 
 \newline
 
@@ -51,42 +51,24 @@ y <- 1 # object for table numbers
 
 \newline
 
-#### `r locality_list[1]`
+The graph below shows the number of dwellings in **`r locality_list[1]`** and **`r locality_list[2]`** from `r min(household_sheet_titles)` to `r max(household_sheet_titles)`.
 
-The graph below shows the number of dwellings in **`r locality_list[1]`** from `r min(household_sheet_titles)` to `r max(household_sheet_titles)`.
-
-####Figure `r x`: Number of dwellings time trend in `r locality_list[1]`.
+#### Figure `r x`: Number of dwellings time trend.
 \newline
 
-```{r echo = FALSE, fig.width = 7, fig.height = 3, warning = FALSE}
-houses_ts[[1]]
+```{r echo = FALSE, fig.width = 7, fig.height = 5, warning = FALSE}
+houses_ts
 
 x <- x + 1
 ```
 
-#### `r locality_list[2]`
+##### Page break
 
-The graph below shows the number of dwellings in **`r locality_list[2]`** from `r min(household_sheet_titles)` to `r max(household_sheet_titles)`.
-
-####Figure `r x`: Number of dwellings time trend in `r locality_list[2]`.
-\newline
-
-```{r echo = FALSE, fig.width = 7, fig.height = 3, warning = FALSE}
-houses_ts[[2]]
-
-x <- x + 1
-```
-
-#### Dwellings
-##### `r locality_list[1]`
-
-Of the total number of dwellings in `r max(household_sheet_titles)`, `r perc_single_discount[[1]]`% (`r n_single_discount[[1]]` households) were occupied by an individual receiving a single occupant council tax discount. Furthermore, `r perc_exempt[[1]]`% (`r n_exempt[[1]]` households) were occupied and exempt from council tax. 
+Of the total number of dwellings in **`r locality_list[1]`** in `r max(household_sheet_titles)`, `r perc_single_discount[[1]]`% (`r n_single_discount[[1]]` households) were occupied by an individual receiving a single occupant council tax discount. Furthermore, `r perc_exempt[[1]]`% (`r n_exempt[[1]]` households) were occupied and exempt from council tax. 
 
 There were `r n_second_homes[[1]]` dwellings classed as a second home in `r max(household_sheet_titles)`, these dwellings made up `r perc_second_homes[[1]]`% of the households in `r locality_list[[1]]`.
 
-#####Page break
-
-####Table `r y`: Breakdown of dwelling types by year for `r locality_list[1]` locality.
+#### Table `r y`: Breakdown of dwelling types by year for `r locality_list[1]` locality.
 \newline
 										
 ```{r echo = FALSE}
@@ -102,11 +84,12 @@ y <- y + 1
 ```
 
 \newline
-##### `r locality_list[2]`
-Of the total number of dwellings in `r max(household_sheet_titles)`, `r perc_single_discount[[2]]`% (`r n_single_discount[[2]]` households) were occupied by an individual receiving a single occupant council tax discount. Furthermore, `r perc_exempt[[2]]`% (`r n_exempt[[2]]` households) were occupied and exempt from council tax. 
+
+Of the total number of dwellings in **`r locality_list[2]`** in `r max(household_sheet_titles)`, `r perc_single_discount[[2]]`% (`r n_single_discount[[2]]` households) were occupied by an individual receiving a single occupant council tax discount. Furthermore, `r perc_exempt[[2]]`% (`r n_exempt[[2]]` households) were occupied and exempt from council tax. 
 
 There were `r n_second_homes[[2]]` dwellings classed as a second home in `r max(household_sheet_titles)`, these dwellings made up `r perc_second_homes[[2]]`% of the households in `r locality_list[[2]]`.
 
+#### Table `r y`: Breakdown of dwelling types by year for `r locality_list[2]` locality.
 \newline
 										
 ```{r echo = FALSE}
@@ -121,23 +104,44 @@ knitr::kable(house_table[[2]],
 y <- y + 1
 ```
 
+\newline
 
 The proportion of households within each council tax band are displayed in the chart below, figures are shown in Table `r y`.
 
-####Figure `r x`: Breakdown of households by council tax band for `r locality_list[1]` in `r max(household_sheet_titles)`.
+#### Figure `r x`: Breakdown of households by council tax band and locality in `r max(household_sheet_titles)`.
 \newline
 
-```{r echo = FALSE, fig.width = 7, fig.height = 2, warning = FALSE}
-ctb_plot[[1]]
+```{r echo = FALSE, fig.width = 7, fig.height = 5, warning = FALSE}
+ctb_plot[[1]]/(ctb_plot[[2]] + theme(legend.position = "none"))+
+  #plot_layout(guides = "collect") & 
+   #theme(legend.position = "top")&
+   plot_annotation(
+    caption = "Source: Scottish Assessors’ Association (via NRS)"
+   )
 
 x <- x + 1
 ```
 
-####Table `r y`: Percentage of households by council tax band for `r locality_list[2]` in `r max(household_sheet_titles)`.
+#### Table `r y`: Percentage of households by council tax band for `r locality_list[1]` in `r max(household_sheet_titles)`.
 \newline
 
 ```{r echo = FALSE}
-knitr::kable(ctb_table,
+knitr::kable(ctb_table[[1]],
+  col.names = c(
+    "**Tax Band**", "**A**", "**B**", "**C**",
+    "**D**", "**E**", "**F**", "**G**", "**H**"
+  ),
+  align = c("l", rep("r", 8))
+)
+
+y <- y + 1
+```
+
+#### Table `r y`: Percentage of households by council tax band for `r locality_list[2]` in `r max(household_sheet_titles)`.
+\newline
+
+```{r echo = FALSE}
+knitr::kable(ctb_table[[2]],
   col.names = c(
     "**Tax Band**", "**A**", "**B**", "**C**",
     "**D**", "**E**", "**F**", "**G**", "**H**"
