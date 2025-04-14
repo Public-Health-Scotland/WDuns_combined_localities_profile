@@ -482,7 +482,7 @@ for (loc in locality_list){
 slf_pops <- ltc |>
   distinct(age_group, hscp_locality, hscp2019name, slf_adj_pop)
 
-slf_pop_loc <- slf_pops %>%
+slf_pop_loc <- slf_pops |>
   filter(hscp_locality %in% locality_list)
 
 # Determine year
@@ -500,17 +500,17 @@ ltc_scot <- ltc %>%
 
 # Load images
 # under 65
-ppl_bold_u65 <- readPNG(path(data_path, "General Health", "infographics", "people bold under 65.png"))
-ppl_faint_u65 <- readPNG(path(data_path, "General Health", "infographics", "people faint under 65.png"))
+ppl_bold_u65_ref <- readPNG(path(data_path, "General Health", "infographics", "people bold under 65.png"))
+ppl_faint_u65_ref <- readPNG(path(data_path, "General Health", "infographics", "people faint under 65.png"))
 # 65-74
-ppl_bold_6574 <- readPNG(path(data_path, "General Health", "infographics", "people bold 65-74.png"))
-ppl_faint_6574 <- readPNG(path(data_path, "General Health", "infographics", "people faint 65-74.png"))
+ppl_bold_6574_ref <- readPNG(path(data_path, "General Health", "infographics", "people bold 65-74.png"))
+ppl_faint_6574_ref <- readPNG(path(data_path, "General Health", "infographics", "people faint 65-74.png"))
 # 75-84
-ppl_bold_7584 <- readPNG(path(data_path, "General Health", "infographics", "people bold 75-84.png"))
-ppl_faint_7584 <- readPNG(path(data_path, "General Health", "infographics", "people faint 75-84.png"))
+ppl_bold_7584_ref <- readPNG(path(data_path, "General Health", "infographics", "people bold 75-84.png"))
+ppl_faint_7584_ref <- readPNG(path(data_path, "General Health", "infographics", "people faint 75-84.png"))
 # over 85
-ppl_bold_o85 <- readPNG(path(data_path, "General Health", "infographics", "people bold over 85.png"))
-ppl_faint_o85 <- readPNG(path(data_path, "General Health", "infographics", "people faint over 85.png"))
+ppl_bold_o85_ref <- readPNG(path(data_path, "General Health", "infographics", "people bold over 85.png"))
+ppl_faint_o85_ref <- readPNG(path(data_path, "General Health", "infographics", "people faint over 85.png"))
 
 # LTC infographic waffle chart
 create_infographic <- function(image1, image2, perc_ltc, col, age_label1, age_label2) {
@@ -543,75 +543,94 @@ create_infographic <- function(image1, image2, perc_ltc, col, age_label1, age_la
 }
 
 # Set percentage with LTC for infographic
-ltc_infographic <- ltc %>%
-  filter(hscp_locality == LOCALITY) %>%
+ltc_infographic <- map(locality_list,
+                       ~filter(ltc, hscp_locality == .x) %>%
   filter(total_ltc > 0) %>%
   group_by(hscp_locality, age_group) %>%
   summarise(people = sum(people)) %>%
   ungroup() %>%
   left_join(slf_pop_loc, by = join_by(hscp_locality, age_group)) %>%
   mutate(perc_with_ltc = round_half_up(people / slf_adj_pop, 2))
+) %>% 
+  set_names(locality_list)
 
+  
 # objects for each percentage for text + cropping images
-ltc.percent.u65 <- filter(ltc_infographic, age_group == "Under 65")$perc_with_ltc
-ltc.percent.6574 <- filter(ltc_infographic, age_group == "65-74")$perc_with_ltc
-ltc.percent.7584 <- filter(ltc_infographic, age_group == "75-84")$perc_with_ltc
-ltc.percent.o85 <- filter(ltc_infographic, age_group == "85+")$perc_with_ltc
+ltc.percent.u65 <- map(locality_list,
+                         ~filter(ltc_infographic[[.x]], age_group == "Under 65") %>% pull(perc_with_ltc)) %>% set_names(locality_list)
+ltc.percent.6574 <- map(locality_list,
+                          ~filter(ltc_infographic[[.x]], age_group == "65-74") %>% pull(perc_with_ltc)) %>% set_names(locality_list)
+ltc.percent.7584 <- map(locality_list,
+                          ~filter(ltc_infographic[[.x]], age_group == "75-84") %>% pull(perc_with_ltc)) %>% set_names(locality_list)
+ltc.percent.o85 <- map(locality_list,
+                         ~filter(ltc_infographic[[.x]], age_group == "85+") %>% pull(perc_with_ltc)) %>% set_names(locality_list)
 
-## Crop images
+waffle.u65 <-list()
+waffle.6574 <- list()
+waffle.7584 <- list()
+waffle.o85 <- list()
 
-# under65
-dm1 <- dim(ppl_bold_u65)
-ppl_bold_u65 <- ppl_bold_u65[1:dm1[1], 1:floor(dm1[2] * ltc.percent.u65), ]
-dm2 <- dim(ppl_faint_u65)
-ppl_faint_u65 <- ppl_faint_u65[1:dm2[1], ceiling(dm2[2] * ltc.percent.u65):dm2[2], ]
+for (loc in locality_list){
+  ## Crop images
+  
+  # under65
+  dm1 <- dim(ppl_bold_u65_ref)
+  ppl_bold_u65 <- ppl_bold_u65_ref[1:dm1[1], 1:floor(dm1[2] * ltc.percent.u65[[loc]]), ]
+  dm2 <- dim(ppl_faint_u65_ref)
+  ppl_faint_u65 <- ppl_faint_u65_ref[1:dm2[1], ceiling(dm2[2] * ltc.percent.u65[[loc]]):dm2[2], ]
+  
+  # 65-74
+  dm1 <- dim(ppl_bold_6574_ref)
+  ppl_bold_6574 <- ppl_bold_6574_ref[1:dm1[1], 1:floor(dm1[2] * ltc.percent.6574[[loc]]), ]
+  dm2 <- dim(ppl_faint_6574_ref)
+  ppl_faint_6574 <- ppl_faint_6574_ref[1:dm2[1], ceiling(dm2[2] * ltc.percent.6574[[loc]]):dm2[2], ]
+  
+  # 75-84
+  dm1 <- dim(ppl_bold_7584_ref)
+  ppl_bold_7584 <- ppl_bold_7584_ref[1:dm1[1], 1:floor(dm1[2] * ltc.percent.7584[[loc]]), ]
+  dm2 <- dim(ppl_faint_7584_ref)
+  ppl_faint_7584 <- ppl_faint_7584_ref[1:dm2[1], ceiling(dm2[2] * ltc.percent.7584[[loc]]):dm2[2], ]
+  
+  # over65
+  dm1 <- dim(ppl_bold_o85_ref)
+  ppl_bold_o85 <- ppl_bold_o85_ref[1:dm1[1], 1:floor(dm1[2] * ltc.percent.o85[[loc]]), ]
+  dm2 <- dim(ppl_faint_o85_ref)
+  ppl_faint_o85 <- ppl_faint_o85_ref[1:dm2[1], ceiling(dm2[2] * ltc.percent.o85[[loc]]):dm2[2], ]
+  
+  waffle.u65[[loc]] <- create_infographic(
+    image1 = ppl_faint_u65, image2 = ppl_bold_u65, perc_ltc = ltc.percent.u65[[loc]],
+    col = palette[1], age_label1 = "under 65", age_label2 = glue("{loc} - UNDER 65")
+  )
+  
+  waffle.6574[[loc]] <- create_infographic(
+    image1 = ppl_faint_6574, image2 = ppl_bold_6574, perc_ltc = ltc.percent.6574[[loc]],
+    col = palette[2], age_label1 = "65 to 74", age_label2 = glue("{loc} - 65 - 74")
+  )
+  
+  waffle.7584[[loc]] <- create_infographic(
+    image1 = ppl_faint_7584, image2 = ppl_bold_7584, perc_ltc = ltc.percent.7584[[loc]],
+    col = palette[3], age_label1 = "75 to 84", age_label2 = glue("{loc} - 75 - 84")
+  )
+  
+  waffle.o85[[loc]] <- create_infographic(
+    image1 = ppl_faint_o85, image2 = ppl_bold_o85, perc_ltc = ltc.percent.o85[[loc]],
+    col = palette[4], age_label1 = "over 85", age_label2 = glue("{loc} - OVER 85")
+  )
 
-# 65-74
-dm1 <- dim(ppl_bold_6574)
-ppl_bold_6574 <- ppl_bold_6574[1:dm1[1], 1:floor(dm1[2] * ltc.percent.6574), ]
-dm2 <- dim(ppl_faint_6574)
-ppl_faint_6574 <- ppl_faint_6574[1:dm2[1], ceiling(dm2[2] * ltc.percent.6574):dm2[2], ]
-
-# 75-84
-dm1 <- dim(ppl_bold_7584)
-ppl_bold_7584 <- ppl_bold_7584[1:dm1[1], 1:floor(dm1[2] * ltc.percent.7584), ]
-dm2 <- dim(ppl_faint_7584)
-ppl_faint_7584 <- ppl_faint_7584[1:dm2[1], ceiling(dm2[2] * ltc.percent.7584):dm2[2], ]
-
-# over65
-dm1 <- dim(ppl_bold_o85)
-ppl_bold_o85 <- ppl_bold_o85[1:dm1[1], 1:floor(dm1[2] * ltc.percent.o85), ]
-dm2 <- dim(ppl_faint_o85)
-ppl_faint_o85 <- ppl_faint_o85[1:dm2[1], ceiling(dm2[2] * ltc.percent.o85):dm2[2], ]
-
-
-waffle.u65 <- create_infographic(
-  image1 = ppl_faint_u65, image2 = ppl_bold_u65, perc_ltc = ltc.percent.u65,
-  col = palette[1], age_label1 = "under 65", age_label2 = "UNDER 65"
-)
-
-waffle.6574 <- create_infographic(
-  image1 = ppl_faint_6574, image2 = ppl_bold_6574, perc_ltc = ltc.percent.6574,
-  col = palette[2], age_label1 = "65 to 74", age_label2 = "65 - 74"
-)
-
-waffle.7584 <- create_infographic(
-  image1 = ppl_faint_7584, image2 = ppl_bold_7584, perc_ltc = ltc.percent.7584,
-  col = palette[3], age_label1 = "75 to 84", age_label2 = "75 - 84"
-)
-
-waffle.o85 <- create_infographic(
-  image1 = ppl_faint_o85, image2 = ppl_bold_o85, perc_ltc = ltc.percent.o85,
-  col = palette[4], age_label1 = "over 85", age_label2 = "OVER 85"
-)
+}
 
 
 ## Combine images
-ltc_waffles <- plot_grid(waffle.u65, waffle.6574, waffle.7584, waffle.o85, nrow = 2)
+ltc_waffles <- plot_grid(waffle.u65[[locality_list[1]]], waffle.u65[[locality_list[2]]], waffle.6574[[locality_list[1]]], waffle.6574[[locality_list[2]]],
+                         waffle.7584[[locality_list[1]]], waffle.7584[[locality_list[2]]],  waffle.o85[[locality_list[1]]], waffle.o85[[locality_list[2]]], nrow = 4)
 
 
 ## Numbers for text
-ltc_percent_total_latest <- (sum(ltc_infographic$people) / sum(ltc_infographic$slf_adj_pop)) * 100
+ltc_percent_total_latest <- list()
+
+for (loc in locality_list){
+  ltc_percent_total_latest[[loc]] <- (sum(ltc_infographic[[loc]]$people) / sum(ltc_infographic[[loc]]$slf_adj_pop)) * 100
+}
 
 
 # Remove unnecessary objects
@@ -633,10 +652,15 @@ ltc2 <- ltc %>%
   summarise(across(everything(), sum)) %>%
   ungroup()
 
+# slf pops 65+
+slf_pop_loc_65 <- slf_pop_loc %>%
+  mutate(age_group = if_else(age_group == "Under 65", "Under 65", "65+")) %>%
+  summarise(slf_adj_pop = sum(slf_adj_pop), .by = c(age_group, hscp_locality))
+  
 ltc_multimorbidity <- ltc2 %>%
   na.omit(ltc2) %>%
   filter(
-    hscp_locality == LOCALITY,
+    hscp_locality %in% locality_list,
     total_ltc != 0
   ) %>%
   mutate(total_ltc = case_when(
@@ -646,46 +670,52 @@ ltc_multimorbidity <- ltc2 %>%
     total_ltc >= 4 ~ "4 or more LTCs"
   )) %>%
   mutate(total_ltc = factor(total_ltc, levels = c("1 LTC", "2 LTCs", "3 LTCs", "4 or more LTCs"))) %>%
-  group_by(age_group, total_ltc) %>%
+  group_by(age_group, total_ltc, hscp_locality) %>%
   summarise(people = sum(people)) %>%
   ungroup() %>%
-  mutate(ltc_pop = if_else(age_group == "Under 65",
-    filter(slf_pop_loc, age_group == "Under 65")$slf_adj_pop,
-    sum(filter(slf_pop_loc, age_group != "Under 65")$slf_adj_pop)
-  )) %>%
-  group_by(age_group) %>%
+  left_join(slf_pop_loc_65, by = join_by(hscp_locality, age_group)) %>%
+  rename(ltc_pop = slf_adj_pop) %>%
+  group_by(age_group, hscp_locality) %>%
   mutate(percent = round_half_up(people / ltc_pop * 100, 1)) %>%
   ungroup()
 
 
 ltc_multimorbidity_table <- ltc_multimorbidity %>%
-  select(age_group, total_ltc, percent) %>%
+  select(age_group, total_ltc, percent, hscp_locality) %>%
   pivot_wider(names_from = age_group, values_from = percent) %>%
   rename(
     " " = total_ltc,
     "Percentage under 65" = "Under 65",
-    "Percentage over 65" = "65+"
+    "Percentage over 65" = "65+",
+    "Locality" = "hscp_locality"
   )
 
 
 ## Figures for text
-ltc_multimorbidity_un65_perc <- sum(filter(
-  ltc_multimorbidity,
-  total_ltc != "1 LTC",
-  age_group == "Under 65"
-)$percent)
+ltc_multimorbidity_un65_perc <- map(locality_list,
+                                    ~filter(ltc_multimorbidity,
+                                            hscp_locality == .x,
+                                            total_ltc != "1 LTC",
+                                            age_group == "Under 65") %>%
+                                      pull(percent) %>%
+                                      sum()
+) %>% set_names(locality_list)
 
-ltc_multimorbidity_ov65_perc <- sum(filter(
-  ltc_multimorbidity,
-  total_ltc != "1 LTC",
-  age_group == "65+"
-)$percent)
+
+ltc_multimorbidity_ov65_perc <- map(locality_list,
+                                    ~filter(ltc_multimorbidity,
+                                            hscp_locality == .x,
+                                            total_ltc != "1 LTC",
+                                            age_group == "65+") %>%
+                                      pull(percent) %>%
+                                      sum()
+) %>% set_names(locality_list)
 
 
 # ###### 3c Prevalence of LTC Types ######
-ltc_types <- ltc2 %>%
+ltc_types <- map(locality_list,
+                 ~filter(ltc2, hscp_locality == .x) %>%
   select(-hscp2019name, -total_ltc, -people) %>%
-  filter(hscp_locality == LOCALITY) %>%
   group_by(hscp_locality, age_group) %>%
   summarise(across(everything(), sum)) %>%
   ungroup() |>
@@ -693,110 +723,116 @@ ltc_types <- ltc2 %>%
     cols = c("Arthritis":"Renal failure"),
     names_to = "key",
     values_to = "value"
-  )
+  )) %>% set_names(locality_list)
 
 # Create negative values for chart
-ltc_types_temp <- ltc_types %>%
-  filter(age_group == "Under 65") %>%
-  mutate(percent = (value / (filter(slf_pop_loc, age_group == "Under 65")$slf_adj_pop) * -100))
+ltc_types_temp <- map(locality_list,
+                      ~filter(ltc_types[[.x]], age_group == "Under 65") %>%
+  mutate(percent = (value / (filter(slf_pop_loc[slf_pop_loc$hscp_locality == .x,], age_group == "Under 65")$slf_adj_pop) * -100))
+) %>% set_names(locality_list)
 
-ltc_types <- ltc_types %>%
-  filter(age_group == "65+") %>%
-  mutate(percent = (value / sum(filter(slf_pop_loc, age_group != "Under 65")$slf_adj_pop) * 100)) %>%
-  bind_rows(ltc_types_temp)
+ltc_types <- map(locality_list,
+                 ~filter(ltc_types[[.x]], age_group == "65+") %>%
+  mutate(percent = (value / sum(filter(slf_pop_loc[slf_pop_loc$hscp_locality == .x,], age_group != "Under 65")$slf_adj_pop) * 100)) %>%
+  bind_rows(ltc_types_temp[[.x]])
+) %>% set_names(locality_list)
 
 rm(ltc_types_temp)
 
 
 #### lollipop with 3 separate plots put together
+ltc_types_plot <- list()
 
-## create conditionals for expand limits
-max_ltc_types_pct <- max(ltc_types$percent)
-
-lims.un65 <- case_when(
-  max_ltc_types_pct < 20 ~ -10,
-  between(max_ltc_types_pct, 20, 24) ~ -12,
-  max_ltc_types_pct > 24 ~ -15
-)
-lims.ov65 <- case_when(
-  max_ltc_types_pct < 20 ~ 20,
-  between(max_ltc_types_pct, 20, 24) ~ 24,
-  max_ltc_types_pct > 24 ~ 30
-)
-
-rm(max_ltc_types_pct)
-
-ltc_plot_left <- ltc_types %>%
-  filter(age_group == "Under 65") %>%
-  ggplot(aes(x = percent, y = key, label = round_half_up(percent, 1))) +
-  geom_point(colour = palette[1], size = 3) +
-  geom_segment(aes(x = 0, y = key, xend = percent, yend = key), linewidth = 0.4) +
-  labs(x = "People under 65 with\nthe condition (%)", y = "", title = "UNDER 65") +
-  scale_x_continuous(breaks = seq(-100, 0, 2), labels = abs) +
-  expand_limits(x = lims.un65) +
-  theme_profiles() +
-  theme(
-    title = element_text(colour = palette[1]),
-    plot.margin = unit(c(0.5, 0, 0, 0), "cm"),
-    axis.title.y = element_blank(),
-    axis.text.y = element_blank(),
-    axis.ticks.y = element_blank()
-  ) +
-  scale_y_discrete(limits = rev(levels(as.factor(ltc_types$key))))
-
-ltc_axis <- ltc_types %>%
-  filter(age_group == "Under 65") %>%
-  ggplot(aes(x = 0, y = key, label = key)) +
-  geom_text() +
-  scale_y_discrete(limits = rev(levels(as.factor(ltc_types$key)))) +
-  theme_void()
-
-ltc_plot_right <- ltc_types %>%
-  filter(age_group == "65+") %>%
-  ggplot(aes(x = percent, y = key, label = round_half_up(percent, 1))) +
-  geom_point(colour = palette[2], size = 3) +
-  geom_segment(aes(x = 0, y = key, xend = percent, yend = key), size = 0.4) +
-  labs(x = "People over 65 with\nthe condition (%)", y = "", title = "OVER 65") +
-  scale_x_continuous(breaks = seq(0, 100, 2)) +
-  expand_limits(x = lims.ov65) +
-  theme_profiles() +
-  theme(
-    title = element_text(colour = palette[2]),
-    plot.margin = unit(c(0.5, 0, 0, 0), "cm"),
-    axis.title.y = element_blank(),
-    axis.text.y = element_blank(),
-    axis.ticks.y = element_blank(),
-  ) +
-  scale_y_discrete(limits = rev(levels(as.factor(ltc_types$key))))
-
-title <- ggdraw() +
-  draw_label(
-    str_wrap(
-      glue("Prevalence of Physical Long-Term Conditions {latest_year_ltc} in the {LOCALITY} Locality"),
-      width = 65
-    ),
-    size = 11,
-    fontface = "bold"
+for (loc in locality_list){
+  ## create conditionals for expand limits
+  max_ltc_types_pct <- max(ltc_types[[loc]]$percent)
+  
+  lims.un65 <- case_when(
+    max_ltc_types_pct < 20 ~ -10,
+    between(max_ltc_types_pct, 20, 24) ~ -12,
+    max_ltc_types_pct > 24 ~ -15
   )
+  lims.ov65 <- case_when(
+    max_ltc_types_pct < 20 ~ 20,
+    between(max_ltc_types_pct, 20, 24) ~ 24,
+    max_ltc_types_pct > 24 ~ 30
+  )
+  
+  rm(max_ltc_types_pct)
+  
+  ltc_plot_left <- ltc_types[[loc]] %>%
+    filter(age_group == "Under 65") %>%
+    ggplot(aes(x = percent, y = key, label = round_half_up(percent, 1))) +
+    geom_point(colour = palette[1], size = 3) +
+    geom_segment(aes(x = 0, y = key, xend = percent, yend = key), linewidth = 0.4) +
+    labs(x = "People under 65 with\nthe condition (%)", y = "", title = "UNDER 65") +
+    scale_x_continuous(breaks = seq(-100, 0, 2), labels = abs) +
+    expand_limits(x = lims.un65) +
+    theme_profiles() +
+    theme(
+      title = element_text(colour = palette[1]),
+      plot.margin = unit(c(0.5, 0, 0, 0), "cm"),
+      axis.title.y = element_blank(),
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank()
+    ) +
+    scale_y_discrete(limits = rev(levels(as.factor(ltc_types[[loc]]$key))))
+  
+  ltc_axis <- ltc_types[[loc]] %>%
+    filter(age_group == "Under 65") %>%
+    ggplot(aes(x = 0, y = key, label = key)) +
+    geom_text() +
+    scale_y_discrete(limits = rev(levels(as.factor(ltc_types[[loc]]$key)))) +
+    theme_void()
+  
+  ltc_plot_right <- ltc_types[[loc]] %>%
+    filter(age_group == "65+") %>%
+    ggplot(aes(x = percent, y = key, label = round_half_up(percent, 1))) +
+    geom_point(colour = palette[2], size = 3) +
+    geom_segment(aes(x = 0, y = key, xend = percent, yend = key), size = 0.4) +
+    labs(x = "People over 65 with\nthe condition (%)", y = "", title = "OVER 65") +
+    scale_x_continuous(breaks = seq(0, 100, 2)) +
+    expand_limits(x = lims.ov65) +
+    theme_profiles() +
+    theme(
+      title = element_text(colour = palette[2]),
+      plot.margin = unit(c(0.5, 0, 0, 0), "cm"),
+      axis.title.y = element_blank(),
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+    ) +
+    scale_y_discrete(limits = rev(levels(as.factor(ltc_types[[loc]]$key))))
+  
+  title <- ggdraw() +
+    draw_label(
+      str_wrap(
+        glue("Prevalence of Physical Long-Term Conditions {latest_year_ltc} in the {loc} Locality"),
+        width = 65
+      ),
+      size = 11,
+      fontface = "bold"
+    )
+  
+  caption <- ggdraw() +
+    draw_label("Source: Source Linkage Files", size = 10, hjust = -0.5)
+  
+  # Combine plots into 1
+  ltc_types_plot[[loc]] <- plot_grid(
+    title,
+    plot_grid(
+      ltc_plot_left,
+      ltc_axis,
+      ltc_plot_right,
+      ncol = 3,
+      align = "h",
+      rel_widths = c(0.5, 0.6, 1)
+    ),
+    caption,
+    nrow = 3,
+    rel_heights = c(3, 20, 1)
+  )
+}
 
-caption <- ggdraw() +
-  draw_label("Source: Source Linkage Files", size = 10, hjust = -0.5)
-
-# Combine plots into 1
-ltc_types_plot <- plot_grid(
-  title,
-  plot_grid(
-    ltc_plot_left,
-    ltc_axis,
-    ltc_plot_right,
-    ncol = 3,
-    align = "h",
-    rel_widths = c(0.5, 0.6, 1)
-  ),
-  caption,
-  nrow = 3,
-  rel_heights = c(3, 20, 1)
-)
 
 
 rm(
@@ -823,7 +859,8 @@ ltc_totals <- left_join(
 )
 
 # Extract population totals to make %
-ltc_pops_total_loc <- sum(slf_pop_loc$slf_adj_pop)
+ltc_pops_total_loc <- map(locality_list, ~filter(slf_pop_loc, hscp_locality == .x) %>%
+                                                 pull(slf_adj_pop) %>% sum()) %>% set_names(locality_list)
 ltc_pops_total_scot <- sum(slf_pops$slf_adj_pop)
 ltc_pops_total_hscp <- sum(filter(slf_pops, hscp2019name == HSCP)$slf_adj_pop)
 
@@ -840,11 +877,23 @@ ltc_cols <- ltc_scot %>%
 
 # Top 5 locality
 top5ltc_loc <- ltc_totals %>%
-  filter(hscp_locality == LOCALITY) %>%
+  filter(hscp_locality == locality_list[1])%>% 
   select(-hscp_locality, -hscp2019name, -people, -slf_adj_pop) %>%
   pivot_longer(cols = everything(), names_to = "topltc", values_to = "value") %>%
   slice_max(n = 5, order_by = value, with_ties = FALSE) %>%
-  mutate(percent = round_half_up((value / ltc_pops_total_loc) * 100, 2)) %>%
+  mutate(percent = round_half_up((value / ltc_pops_total_loc[[locality_list[1]]]) * 100, 2)) %>%
+  select(-value) %>%
+  left_join(ltc_cols, by = join_by(topltc)) %>%
+  unite("Prevalence", topltc, percent, sep = "\n") %>%
+  mutate(Prevalence = paste(Prevalence, "%"))
+
+# Top 5 locality - other loc
+top5ltc_other_loc <- ltc_totals %>%
+  filter(hscp_locality == locality_list[2])%>% 
+  select(-hscp_locality, -hscp2019name, -people, -slf_adj_pop) %>%
+  pivot_longer(cols = everything(), names_to = "topltc", values_to = "value") %>%
+  slice_max(n = 5, order_by = value, with_ties = FALSE) %>%
+  mutate(percent = round_half_up((value / ltc_pops_total_loc[[locality_list[2]]]) * 100, 2)) %>%
   select(-value) %>%
   left_join(ltc_cols, by = join_by(topltc)) %>%
   unite("Prevalence", topltc, percent, sep = "\n") %>%
@@ -878,8 +927,8 @@ top5ltc_scot <- ltc_totals %>%
 
 ## Create column headers
 
-loc.ltc.table <- str_wrap(glue("{LOCALITY} Locality"), width = if_else(n_loc < 5, 30, 25))
-
+loc.ltc.table <- str_wrap(glue("{locality_list[1]} Locality"), width = if_else(n_loc < 5, 30, 25))
+other.loc.ltc.table <-  str_wrap(glue("{locality_list[2]} Locality"), width = if_else(n_loc < 5, 30, 25))
 hscp.ltc.table <- str_wrap(glue("{HSCP} HSCP"), width = 25)
 
 
@@ -890,6 +939,14 @@ ltc_loc_col <- tableGrob(top5ltc_loc[, 1],
     core = list(bg_params = list(fill = top5ltc_loc$colours), fg_params = list(col = "white", fontface = 2, fontsize = 11)),
     colhead = list(bg_params = list(fill = "white"), fg_params = list(fontface = 3, fontsize = 11))
   )
+)
+ltc_other_loc_col <- tableGrob(top5ltc_other_loc[, 1],
+                         cols = other.loc.ltc.table,
+                         rows = NULL,
+                         theme = ttheme_default(
+                           core = list(bg_params = list(fill = top5ltc_other_loc$colours), fg_params = list(col = "white", fontface = 2, fontsize = 11)),
+                           colhead = list(bg_params = list(fill = "white"), fg_params = list(fontface = 3, fontsize = 11))
+                         )
 )
 ltc_hscp_col <- tableGrob(top5ltc_hscp[, 1],
   cols = hscp.ltc.table,
@@ -909,7 +966,7 @@ ltc_scot_col <- tableGrob(top5ltc_scot[, 1],
 )
 
 ## Combine columns
-top5ltc_all_table <- as_gtable(gtable_combine(ltc_loc_col, ltc_hscp_col, ltc_scot_col))
+top5ltc_all_table <- as_gtable(gtable_combine(ltc_loc_col, ltc_other_loc_col, ltc_hscp_col, ltc_scot_col))
 
 title <- ggdraw() +
   draw_label(str_wrap(
@@ -928,12 +985,14 @@ rm(
 )
 
 ## Objects for text
-
 ltc_perc_scot <- round_half_up((sum(filter(ltc_scot, total_ltc > 0)$people) / ltc_pops_total_scot) * 100, 1)
 
-ltc_diff_scot <- if_else(ltc_percent_total_latest > ltc_perc_scot, "higher", "lower")
+ltc_diff_scot <- list()
 
+for (loc in locality_list){
+  ltc_diff_scot[[loc]] <- if_else(ltc_percent_total_latest[[loc]] > ltc_perc_scot, "higher", "lower")
 
+}
 
 ############################### 4) CODE FOR SUMMARY TABLE ###############################
 
@@ -1023,29 +1082,11 @@ other_locs_ltc <- ltc |>
 
 # 2. HSCP
 
-if (HSCP == "Clackmannanshire and Stirling") {
-  hscp_life_exp_male <- NA_real_
-  hscp_life_exp_fem <- NA_real_
-} else {
-  hscp_life_exp_male <- hscp_scot_summary_table(
-    data = filter(life_exp, sex == "Male"),
-    latest_year = latest_year_life_exp_otherareas,
-    area = HSCP
-  )
-
-  hscp_life_exp_fem <- hscp_scot_summary_table(
-    data = filter(life_exp, sex == "Female"),
-    latest_year = latest_year_life_exp_otherareas,
-    area = HSCP
-  )
-}
-
-
 hscp_deaths_15_44 <- hscp_scot_summary_table(deaths_15_44, latest_year = max(deaths_15_44$year), area = HSCP)
 hscp_cancer <- hscp_scot_summary_table(cancer_reg, latest_year = max(cancer_reg$year), area = HSCP)
 hscp_adp <- hscp_scot_summary_table(adp_presc, latest_year = max(adp_presc$year), area = HSCP)
 
-hscp_ltc <- round_half_up((sum(other_locs_ltc) + ltc_percent_total_latest) / n_loc, 1)
+hscp_ltc <- round_half_up((sum(other_locs_ltc) + ltc_percent_total_latest[[locality_list[1]]]) / n_loc, 1)
 
 # 3. Scotland
 
