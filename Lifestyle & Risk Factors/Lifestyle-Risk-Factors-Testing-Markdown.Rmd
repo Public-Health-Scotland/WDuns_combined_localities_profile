@@ -27,13 +27,13 @@ y <- 1 # object for table numbers
 # LOCALITY <- "Skye, Lochalsh and West Ross"
 # LOCALITY <- "Ayr North and Former Coalfield Communities"
 
-source("Master RMarkdown Document & Render Code/Global Script.R")
+#source("Master RMarkdown Document & Render Code/Global Script.R")
 
-lp_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
+#lp_path <- "/conf/LIST_analytics/West Dunbartonshire/Locality Profiles Combined/"
 ```
 
 ```{r produce_data, include = FALSE}
-source("Lifestyle & Risk Factors/2. Lifestyle & Risk Factors Outputs.R")
+source(here("Lifestyle & Risk Factors/2. Lifestyle & Risk Factors Outputs.R"))
 ```
 
 ## Lifestyle and Risk Factors
@@ -42,24 +42,33 @@ source("Lifestyle & Risk Factors/2. Lifestyle & Risk Factors Outputs.R")
 
 **Summary**
 
-Mental and physical well-being has close ties with people's lifestyles and behaviours. Financial security, employment and location are influences that often have a bearing on these choices. Issues can develop when alcohol, smoking or drug use shape lives. This section provides data on drug-related hospital admissions, alcohol-related hospital admissions, alcohol-specific deaths and bowel screening uptake, to give an overview of some of the lifestyles and behaviours for the `r LOCALITY` locality. These can give an idea of quality of life and prosperity.
+Mental and physical well-being has close ties with people's lifestyles and behaviours. Financial security, employment and location are influences that often have a bearing on these choices. Issues can develop when alcohol, smoking or drug use shape lives. This section provides data on drug-related hospital admissions, alcohol-related hospital admissions, alcohol-specific deaths and bowel screening uptake, to give an overview of some of the lifestyles and behaviours for `r locality_list[1]` and `r locality_list[2]` localities. These can give an idea of quality of life and prosperity.
 
-For the most recent time period available^3^, `r LOCALITY` had:
+For the most recent time period available^3^, **`r locality_list[1]`** had:
 
--   **`r format_number_for_text(alcohol_hosp_latest)`** alcohol-related hospital admissions per 100,000 age-sex standardised population. This is `r alcohol_hosp_diff_scot` than Scotland (`r  format_number_for_text(scot_alcohol_hosp)` admissions per 100,000)^4^.
--   **`r format_number_for_text(alcohol_deaths_latest)`** alcohol-specific deaths per 100,000 age-sex standardised population. This is `r alcohol_deaths_diff_scot` than Scotland (`r  format_number_for_text(scot_alcohol_deaths)` deaths per 100,000)^4^.
--   **`r format_number_for_text(drug_hosp_latest)`** drug-related hospital admissions per 100,000 age-sex standardised population. This is `r drug_hosp_diff_scot` than Scotland (`r format_number_for_text(scot_drug_hosp)` admissions per 100,000)^4^.
--   **`r format_number_for_text(bowel_screening_latest)`%** uptake of bowel screening among the eligible population, compared to `r format_number_for_text(scot_bowel_screening)`% in Scotland.
+-   **`r format_number_for_text(alcohol_hosp_latest[[1]])`** alcohol-related hospital admissions per 100,000 age-sex standardised population. This is `r alcohol_hosp_diff_scot[[1]]` than Scotland (`r  format_number_for_text(scot_alcohol_hosp)` admissions per 100,000)^4^.
+-   **`r format_number_for_text(alcohol_deaths_latest[[1]])`** alcohol-specific deaths per 100,000 age-sex standardised population. This is `r alcohol_deaths_diff_scot[[1]]` than Scotland (`r  format_number_for_text(scot_alcohol_deaths)` deaths per 100,000)^4^.
+-   **`r format_number_for_text(drug_hosp_latest[[1]])`** drug-related hospital admissions per 100,000 age-sex standardised population. This is `r drug_hosp_diff_scot[[1]]` than Scotland (`r format_number_for_text(scot_drug_hosp)` admissions per 100,000)^4^.
+-   **`r format_number_for_text(bowel_screening_latest[[1]])`%** uptake of bowel screening among the eligible population, compared to `r format_number_for_text(scot_bowel_screening)`% in Scotland.
+
+\newline
+
+For the most recent time period available^3^, **`r locality_list[2]`** had:
+
+-   **`r format_number_for_text(alcohol_hosp_latest[[2]])`** alcohol-related hospital admissions per 100,000 age-sex standardised population. This is `r alcohol_hosp_diff_scot[[2]]` than Scotland (`r  format_number_for_text(scot_alcohol_hosp)` admissions per 100,000)^4^.
+-   **`r format_number_for_text(alcohol_deaths_latest[[2]])`** alcohol-specific deaths per 100,000 age-sex standardised population. This is `r alcohol_deaths_diff_scot[[2]]` than Scotland (`r  format_number_for_text(scot_alcohol_deaths)` deaths per 100,000)^4^.
+-   **`r format_number_for_text(drug_hosp_latest[[2]])`** drug-related hospital admissions per 100,000 age-sex standardised population. This is `r drug_hosp_diff_scot[[2]]` than Scotland (`r format_number_for_text(scot_drug_hosp)` admissions per 100,000)^4^.
+-   **`r format_number_for_text(bowel_screening_latest[[2]])`%** uptake of bowel screening among the eligible population, compared to `r format_number_for_text(scot_bowel_screening)`% in Scotland.
 
 \newline
 
 ### Alcohol-related Hospital Admissions
 
-In `r latest_period_alcohol_hosp`, the rate of alcohol-related admissions was **`r format_number_for_text(alcohol_hosp_latest)`** per 100,000 age-sex standardised population in `r LOCALITY`. This is `r get_article(alcohol_hosp_change)` `r format_number_for_text(alcohol_hosp_change)`% `r alcohol_hosp_change_word` overall since `r earliest_period_alcohol_hosp`. Figure `r x` shows a trend of alcohol-related hospital admissions for `r LOCALITY` locality compared with Scotland, `r HSCP` HSCP and `r HB` from financial year `r earliest_period_alcohol_hosp` to `r latest_period_alcohol_hosp`.
+In `r latest_period_alcohol_hosp`, the rate of alcohol-related admissions was **`r format_number_for_text(alcohol_hosp_latest[[1]])`** per 100,000 age-sex standardised population in **`r locality_list[1]`**. This is `r get_article(alcohol_hosp_change[[1]])` `r format_number_for_text(alcohol_hosp_change[[1]])`% `r alcohol_hosp_change_word[[1]]` overall since `r earliest_period_alcohol_hosp`. 
 
-Figure `r x + 1` then compares different areas, including the other localities in `r HSCP`, for the latest financial year. This bar chart shows that in `r latest_period_alcohol_hosp`, `r LOCALITY` locality had a `r alcohol_hosp_diff_scot` alcohol-related hospital admissions rate compared to Scotland (`r format_number_for_text(alcohol_hosp_latest)` and `r  format_number_for_text(scot_alcohol_hosp)` admissions respectively).
+In `r latest_period_alcohol_hosp`, the rate of alcohol-related admissions was **`r format_number_for_text(alcohol_hosp_latest[[2]])`** per 100,000 age-sex standardised population in **`r locality_list[2]`**. This is `r get_article(alcohol_hosp_change[[2]])` `r format_number_for_text(alcohol_hosp_change[[2]])`% `r alcohol_hosp_change_word[[2]]` overall since `r earliest_period_alcohol_hosp`. 
 
-##### Page break
+Figure `r x` shows a trend of alcohol-related hospital admissions for `r locality_list[1]` and `r locality_list[2]` localities compared with Scotland, `r HSCP` HSCP and `r HB` from financial year `r earliest_period_alcohol_hosp` to `r latest_period_alcohol_hosp`.
 
 #### Figure `r x`: Alcohol-related hospital admission rates by area and over time.
 
@@ -70,6 +79,11 @@ alcohol_hosp_time_trend
 
 x <- x + 1
 ```
+
+Figure `r x` compares different areas, including the other localities in `r HSCP`, for the latest financial year. This bar chart shows that in `r latest_period_alcohol_hosp`, **`r locality_list[1]` locality** had a `r alcohol_hosp_diff_scot[[1]]` alcohol-related hospital admissions rate compared to Scotland (`r format_number_for_text(alcohol_hosp_latest[[1]])` and `r  format_number_for_text(scot_alcohol_hosp)` admissions respectively). In `r latest_period_alcohol_hosp`, **`r locality_list[2]` locality** had a `r alcohol_hosp_diff_scot[[2]]` alcohol-related hospital admissions rate compared to Scotland (`r format_number_for_text(alcohol_hosp_latest[[2]])` and `r  format_number_for_text(scot_alcohol_hosp)` admissions respectively).
+
+
+##### Page break
 
 #### Figure `r x`: Alcohol-related hospital admissions by area for the latest time period.
 
@@ -85,7 +99,9 @@ x <- x + 1
 
 ### Alcohol-Specific Deaths
 
-Data on alcohol-specific deaths is available as 5-year aggregates. In `r LOCALITY`, the latest rate of alcohol-specific deaths was **`r format_number_for_text(alcohol_deaths_latest)`** deaths per 100,000 age-sex standardised population. This is `r format_number_for_text(alcohol_deaths_change)`% `r alcohol_deaths_change_word` than the rate in `r earliest_period_alcohol_deaths`. Figure `r x + 1` also shows that the locality has a `r alcohol_deaths_diff_scot` alcohol-specific death rate compared to Scotland overall (`r  format_number_for_text(scot_alcohol_deaths)` deaths per 100,000).
+Data on alcohol-specific deaths is available as 5-year aggregates. In `r locality_list[1]`, the latest rate of alcohol-specific deaths was **`r format_number_for_text(alcohol_deaths_latest[[1]])`** deaths per 100,000 age-sex standardised population. This is `r format_number_for_text(alcohol_deaths_change[[1]])`% `r alcohol_deaths_change_word[[1]]` than the rate in `r earliest_period_alcohol_deaths`. Figure `r x + 1` also shows that the locality has a `r alcohol_deaths_diff_scot[[1]]` alcohol-specific death rate compared to Scotland overall (`r  format_number_for_text(scot_alcohol_deaths)` deaths per 100,000). 
+
+In `r locality_list[2]`, the latest rate of alcohol-specific deaths was **`r format_number_for_text(alcohol_deaths_latest[[2]])`** deaths per 100,000 age-sex standardised population. This is `r format_number_for_text(alcohol_deaths_change[[2]])`% `r alcohol_deaths_change_word[[2]]` than the rate in `r earliest_period_alcohol_deaths`. Figure `r x + 1` also shows that the locality has a `r alcohol_deaths_diff_scot[[2]]` alcohol-specific death rate compared to Scotland overall (`r  format_number_for_text(scot_alcohol_deaths)` deaths per 100,000).
 
 #### Figure `r x`: Alcohol-specific deaths by area and over time.
 
@@ -111,9 +127,13 @@ x <- x + 1
 
 ### Drug-related Hospital Admissions
 
-There were **`r format_number_for_text(drug_hosp_latest)`** drug-related hospital admissions per 100,000 age-sex standardised population^4^ in the `r LOCALITY` locality in the time period `r latest_period_drug_hosp` (3-year financial year aggregate). This is `r get_article(drug_hosp_change)` `r format_number_for_text(drug_hosp_change)`% `r drug_hosp_change_word` since `r earliest_period_drug_hosp`. A trend of the change in drug-related hospital admissions for the locality and comparable areas is shown in Figure `r x` from `r earliest_period_drug_hosp_trend` onward.
+A trend of the change in drug-related hospital admissions for the locality and comparable areas is shown in Figure `r x` from `r earliest_period_drug_hosp_trend` onward.
 
-A comparison of areas at the most recent time period (`r latest_period_drug_hosp` aggregated financial years) is available in Figure `r x + 1` This shows the `r LOCALITY` locality has a `r drug_hosp_diff_scot` rate of drug-related hospital admissions than Scotland (`r format_number_for_text(scot_drug_hosp)` admissions per 100,000).
+There were **`r format_number_for_text(drug_hosp_latest[[1]])`** drug-related hospital admissions per 100,000 age-sex standardised population^4^ in the **`r locality_list[1]` locality** in the time period `r latest_period_drug_hosp` (3-year financial year aggregate). This is `r get_article(drug_hosp_change[[1]])` `r format_number_for_text(drug_hosp_change[[1]])`% `r drug_hosp_change_word[[1]]` since `r earliest_period_drug_hosp`. 
+
+There were **`r format_number_for_text(drug_hosp_latest[[2]])`** drug-related hospital admissions per 100,000 age-sex standardised population^4^ in the **`r locality_list[2]` locality** in the time period `r latest_period_drug_hosp` (3-year financial year aggregate). This is `r get_article(drug_hosp_change[[2]])` `r format_number_for_text(drug_hosp_change[[2]])`% `r drug_hosp_change_word[[2]]` since `r earliest_period_drug_hosp`. 
+
+A comparison of areas at the most recent time period (`r latest_period_drug_hosp` aggregated financial years) is available in Figure `r x + 1`. This shows the **`r locality_list[1]` locality** has a `r drug_hosp_diff_scot[[1]]` rate of drug-related hospital admissions than Scotland (`r format_number_for_text(scot_drug_hosp)` admissions per 100,000). **`r locality_list[2]` locality** has a `r drug_hosp_diff_scot[[2]]` rate of drug-related hospital admissions than Scotland (`r format_number_for_text(scot_drug_hosp)` admissions per 100,000). 
 
 #### Figure `r x`: Drug-related hospital admission rates by area and over time.
 
@@ -141,7 +161,11 @@ x <- x + 1
 
 Bowel screening is offered every two years to eligible men and women aged between 50-74 years old. Eligible people are posted a test kit which is completed at home. Since 1st April 2013, those aged 75 and over can also self-refer and opt into screening.
 
-A trend of the percentage uptake of bowel screening among the eligible population is shown for `r LOCALITY` and comparable areas. Data is presented as 3-year aggregates. The `r latest_period_bowel_screening` uptake rate for `r LOCALITY` is **`r format_number_for_text(bowel_screening_latest)`%**. This is `r get_article(bowel_screening_change)` `r format_number_for_text(bowel_screening_change)`% `r bowel_screening_change_word` since `r earliest_period_bowel_screening`. As can be seen in Figure `r x + 1`, in the latest estimate, the uptake in `r LOCALITY` was `r bowel_screening_diff_scot` than the uptake in Scotland overall (`r format_number_for_text(scot_bowel_screening)`%).
+A trend of the percentage uptake of bowel screening among the eligible population is shown for `r locality_list[1]` and `r locality_list[2]` and comparable areas. Data is presented as 3-year aggregates. 
+
+The `r latest_period_bowel_screening` uptake rate for `r locality_list[1]` is **`r format_number_for_text(bowel_screening_latest[[1]])`%**. This is `r get_article(bowel_screening_change[[1]])` `r format_number_for_text(bowel_screening_change[[1]])`% `r bowel_screening_change_word[[1]]` since `r earliest_period_bowel_screening`. As can be seen in Figure `r x + 1`, in the latest estimate, the uptake in `r locality_list[1]` was `r bowel_screening_diff_scot[[1]]` than the uptake in Scotland overall (`r format_number_for_text(scot_bowel_screening)`%).
+
+The `r latest_period_bowel_screening` uptake rate for `r locality_list[2]` is **`r format_number_for_text(bowel_screening_latest[[2]])`%**. This is `r get_article(bowel_screening_change[[2]])` `r format_number_for_text(bowel_screening_change[[2]])`% `r bowel_screening_change_word[[2]]` since `r earliest_period_bowel_screening`. As can be seen in Figure `r x + 1`, in the latest estimate, the uptake in `r locality_list[2]` was `r bowel_screening_diff_scot[[2]]` than the uptake in Scotland overall (`r format_number_for_text(scot_bowel_screening)`%).
 
 ##### Page break
 
