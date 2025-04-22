@@ -14,8 +14,6 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 options(kableExtra.auto_format = FALSE)
 
-x <- 1 # object for figure numbers
-y <- 1 # object for table numbers
 ```
 
 ```{r testing_setup, include = FALSE}
@@ -32,9 +30,18 @@ y <- 1 # object for table numbers
 #lp_path <- "/conf/LIST_analytics/West Dunbartonshire/Locality Profiles Combined/"
 ```
 
-```{r produce_data, include = FALSE}
-source(here("Lifestyle & Risk Factors/2. Lifestyle & Risk Factors Outputs.R"))
+```{r sourcecode, include = FALSE}
+
+source(here::here("Master RMarkdown Document & Render Code", "Locality Profiles parameter values.R"))
+source(here::here("Lifestyle & Risk Factors/2. Lifestyle & Risk Factors Outputs.R"))
 ```
+
+```{r resetfigurevalues, include = FALSE}
+
+x <- 1 # object for figure numbers
+y <- 1 # object for table numbers
+```
+
 
 ## Lifestyle and Risk Factors
 
