@@ -30,6 +30,7 @@ lookup <- read_in_localities()
 # hscp_list <- outlier_hscps
 HSCP <- "West Dunbartonshire"
 
+
 # NOTE - This checks that it exactly matches the lookup
 stopifnot(all(HSCP %in% unique(lookup[["hscp2019name"]])))
 
@@ -37,5 +38,11 @@ stopifnot(all(HSCP %in% unique(lookup[["hscp2019name"]])))
   locality_list <- lookup |>
     filter(hscp2019name == HSCP) |>
     pull(hscp_locality)
+  
+# HB name
+  HB <- lookup |> 
+    filter(hscp2019name == HSCP) |> 
+    distinct(hb2019name) |> 
+    pull()
 
   

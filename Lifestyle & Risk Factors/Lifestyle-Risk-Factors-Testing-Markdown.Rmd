@@ -33,7 +33,9 @@ y <- 1 # object for table numbers
 ```
 
 ```{r produce_data, include = FALSE}
-source(here("Lifestyle & Risk Factors/2. Lifestyle & Risk Factors Outputs.R"))
+
+source(here::here("Master RMarkdown Document & Render Code", "Locality Profiles parameter values.R"))
+source(here::here("Lifestyle & Risk Factors/2. Lifestyle & Risk Factors Outputs.R"))
 ```
 
 ## Lifestyle and Risk Factors
