@@ -10,7 +10,7 @@ rm(list = ls())
 Sys.umask("006")
 
 # Source in functions code
-source("Master RMarkdown Document & Render Code/Global Script.R")
+source(here("Master RMarkdown Document & Render Code/Global Script.R"))
 
 
 # Set file path
