@@ -216,7 +216,7 @@ life_exp_table <- life_exp %>%
   ) %>%
   arrange(area_type) %>%
   select("Sex" = sex, area_name, measure) %>%
-  pivot_wider(names_from = area_name, values_from = measure)
+  pivot_wider(names_from = area_name, values_from = measure) 
 
 
 # Table breaking down intermediate zones
@@ -236,6 +236,26 @@ life_exp_table <- life_exp %>%
   arrange(area_name) %>%
   select(-area_type) %>%
   pivot_wider(names_from = area_name, values_from = measure)
+
+#transpose tables for word doc
+transpose_LET <- function(df = life_exp_table){
+  
+  df <- 
+    df |> 
+    as.matrix() |> t() |> 
+    as_tibble(., rownames = "row_to_names")
+  
+  let_heading_names <- df[1,] 
+  let_heading_names[1,1] <- "Region"
+  
+  df <- 
+    df |> 
+    slice(-1) 
+  
+  colnames(df) <- let_heading_names
+  
+  return(df)
+}
 
 
 ## Numbers for text
