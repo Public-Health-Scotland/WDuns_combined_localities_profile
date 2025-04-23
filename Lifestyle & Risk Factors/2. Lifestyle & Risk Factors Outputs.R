@@ -24,7 +24,7 @@
 ext_year <- 2024
 
 # Set file path
-# lp_path <- "/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles/"
+# lp_path <- "/conf/LIST_analytics/West Dunbartonshire/Locality Profiles Combined/"
 
 # Source in functions code
 # source("Master RMarkdown Document & Render Code/Global Script.R")
@@ -35,13 +35,13 @@ ext_year <- 2024
 lookup <- read_in_localities()
 
 # Determine HSCP and HB based on Loc
-HSCP <- as.character(filter(lookup, hscp_locality == LOCALITY)$hscp2019name)
-HB <- as.character(filter(lookup, hscp_locality == LOCALITY)$hb2019name)
+#HSCP <- as.character(filter(lookup, hscp_locality %in% locality_list)$hscp2019name)
+#HB <- as.character(filter(lookup, hscp_locality %in% locality_list)$hb2019name)
 
 # Determine other localities based on LOCALITY object
 other_locs <- lookup %>%
   select(hscp_locality, hscp2019name) %>%
-  filter(hscp2019name == HSCP & hscp_locality != LOCALITY) %>%
+  filter(hscp2019name == HSCP & hscp_locality == locality_list[2]) %>%
   arrange(hscp_locality)
 
 # Find number of locs per partnership
@@ -52,7 +52,7 @@ n_loc <- count_localities(lookup, HSCP)
 ### Import + clean datasets ----
 
 ## Drug-related hospital admissions
-drug_hosp <- readRDS(paste0(lp_path, "Lifestyle & Risk Factors/Data ", ext_year, "/scotpho_data_extract_drug_hosp.RDS")) %>%
+drug_hosp <- readRDS(paste0(data_path, "Lifestyle & Risk Factors/Data ", ext_year, "/scotpho_data_extract_drug_hosp.RDS")) %>%
   clean_scotpho_dat() %>%
   mutate(period_short = gsub("to", "-", substr(period, 1, 18)))
 
@@ -60,7 +60,7 @@ check_missing_data_scotpho(drug_hosp)
 
 
 # Alcohol-related hospital admissions
-alcohol_hosp <- readRDS(paste0(lp_path, "Lifestyle & Risk Factors/Data ", ext_year, "/scotpho_data_extract_alcohol_hosp.RDS")) %>%
+alcohol_hosp <- readRDS(paste0(data_path, "Lifestyle & Risk Factors/Data ", ext_year, "/scotpho_data_extract_alcohol_hosp.RDS")) %>%
   clean_scotpho_dat() %>%
   mutate(period_short = substr(period, 1, 7))
 
@@ -68,14 +68,14 @@ check_missing_data_scotpho(alcohol_hosp)
 
 
 ## Alcohol-specific deaths
-alcohol_deaths <- readRDS(paste0(lp_path, "Lifestyle & Risk Factors/Data ", ext_year, "/scotpho_data_extract_alcohol_deaths.RDS")) %>%
+alcohol_deaths <- readRDS(paste0(data_path, "Lifestyle & Risk Factors/Data ", ext_year, "/scotpho_data_extract_alcohol_deaths.RDS")) %>%
   clean_scotpho_dat() %>%
   mutate(period_short = gsub("to", "-", substr(period, 1, 12)))
 
 check_missing_data_scotpho(alcohol_deaths)
 
 ## Bowel screening uptake
-bowel_screening <- readRDS(paste0(lp_path, "Lifestyle & Risk Factors/Data ", ext_year, "/scotpho_data_extract_bowel_screening.RDS")) %>%
+bowel_screening <- readRDS(paste0(data_path, "Lifestyle & Risk Factors/Data ", ext_year, "/scotpho_data_extract_bowel_screening.RDS")) %>%
   clean_scotpho_dat() %>%
   mutate(period_short = gsub("to", "-", substr(period, 1, 12)))
 
@@ -121,24 +121,9 @@ drug_hosp_bar <- drug_hosp %>%
 drug_hosp_bar
 
 ## Numbers for text
-drug_hosp_latest <- filter(
-  drug_hosp,
-  year == max_year_drug_hosp,
-  area_name == LOCALITY,
-  area_type == "Locality"
-) |> pull(measure)
+drug_hosp_latest <- numbers_for_text(drug_hosp)
 
-drug_hosp_earliest <- filter(
-  drug_hosp,
-  year == min_year_drug_hosp,
-  area_name == LOCALITY,
-  area_type == "Locality"
-) |> pull(measure)
-
-drug_hosp_change <- abs((drug_hosp_latest - drug_hosp_earliest) / drug_hosp_earliest * 100)
-drug_hosp_change_word <- if_else(drug_hosp_latest > drug_hosp_earliest,
-  "increase", "decrease"
-)
+drug_hosp_earliest <- numbers_for_text_min(drug_hosp)
 
 scot_drug_hosp <- filter(
   drug_hosp,
@@ -146,8 +131,17 @@ scot_drug_hosp <- filter(
   area_name == "Scotland"
 ) |> pull(measure)
 
-drug_hosp_diff_scot <- if_else(drug_hosp_latest > scot_drug_hosp, "higher", "lower")
+drug_hosp_change <- list()
+drug_hosp_change_word <- list()
+drug_hosp_diff_scot <- list()
 
+for (loc in locality_list){
+  drug_hosp_change[[loc]] <- abs((drug_hosp_latest[[loc]] - drug_hosp_earliest[[loc]]) / drug_hosp_earliest[[loc]] * 100)
+  drug_hosp_change_word[[loc]] <- if_else(drug_hosp_latest[[loc]] > drug_hosp_earliest[[loc]],
+  "increase", "decrease"
+)
+  drug_hosp_diff_scot[[loc]] <- if_else(drug_hosp_latest[[loc]] > scot_drug_hosp, "higher", "lower")
+}
 
 ##### 2b Alcohol-related hospital admissions #####
 
@@ -182,30 +176,27 @@ alcohol_hosp_bar
 
 ## Numbers for text
 
-alcohol_hosp_latest <- filter(
-  alcohol_hosp,
-  year == max(alcohol_hosp$year) &
-    (area_name == LOCALITY & area_type == "Locality")
-)$measure
+alcohol_hosp_latest <- numbers_for_text(alcohol_hosp)
 
-alcohol_hosp_earliest <- filter(
-  alcohol_hosp,
-  (year == min(alcohol_hosp$year)) &
-    (area_name == LOCALITY & area_type == "Locality")
-)$measure
-
-alcohol_hosp_change <- abs((alcohol_hosp_latest - alcohol_hosp_earliest) / alcohol_hosp_earliest * 100)
-alcohol_hosp_change_word <- if_else(alcohol_hosp_latest > alcohol_hosp_earliest,
-  "increase", "decrease"
-)
-
+alcohol_hosp_earliest <- numbers_for_text_min(alcohol_hosp)
+  
 scot_alcohol_hosp <- filter(
   alcohol_hosp,
   year == max(alcohol_hosp$year) & area_name == "Scotland"
 )$measure
 
-alcohol_hosp_diff_scot <- if_else(alcohol_hosp_latest > scot_alcohol_hosp, "higher", "lower")
+alcohol_hosp_change <- list()
+alcohol_hosp_change_word <- list()
+alcohol_hosp_diff_scot <- list()
 
+for (loc in locality_list){
+  alcohol_hosp_change[[loc]] <- abs((alcohol_hosp_latest[[loc]] - alcohol_hosp_earliest[[loc]]) / alcohol_hosp_earliest[[loc]] * 100)
+alcohol_hosp_change_word[[loc]] <- if_else(alcohol_hosp_latest[[loc]] > alcohol_hosp_earliest[[loc]],
+  "increase", "decrease"
+)
+alcohol_hosp_diff_scot[[loc]] <- if_else(alcohol_hosp_latest[[loc]] > scot_alcohol_hosp, "higher", "lower")
+
+}
 
 
 ##### 2c Alcohol specific deaths #####
@@ -240,32 +231,26 @@ alcohol_deaths_bar
 
 ## Numbers for text
 
-alcohol_deaths_latest <- filter(
-  alcohol_deaths,
-  year == max(alcohol_deaths$year) &
-    (area_name == LOCALITY & area_type == "Locality")
-)$measure
-
-alcohol_deaths_earliest <- filter(
-  alcohol_deaths,
-  (year == min(alcohol_deaths$year)) &
-    (area_name == LOCALITY & area_type == "Locality")
-)$measure
-
-alcohol_deaths_change <- abs((alcohol_deaths_latest - alcohol_deaths_earliest) / alcohol_deaths_earliest * 100)
-alcohol_deaths_change_word <- if_else(alcohol_deaths_latest > alcohol_deaths_earliest,
-  "higher", "lower"
-)
-
+alcohol_deaths_latest <- numbers_for_text(alcohol_deaths)
+alcohol_deaths_earliest <- numbers_for_text_min(alcohol_deaths)
 scot_alcohol_deaths <- filter(
   alcohol_deaths,
   year == max(alcohol_deaths$year) & area_name == "Scotland"
 )$measure
 
-alcohol_deaths_diff_scot <- if_else(alcohol_deaths_latest > scot_alcohol_deaths, "higher", "lower")
+alcohol_deaths_change <- list()
+alcohol_deaths_change_word <- list()
+alcohol_deaths_diff_scot <- list()
 
 
+for (loc in locality_list){
+  alcohol_deaths_change[[loc]] <- abs((alcohol_deaths_latest[[loc]] - alcohol_deaths_earliest[[loc]]) / alcohol_deaths_earliest[[loc]] * 100)
+  alcohol_deaths_change_word[[loc]] <- if_else(alcohol_deaths_latest[[loc]] > alcohol_deaths_earliest[[loc]],
+  "higher", "lower"
+)
+  alcohol_deaths_diff_scot[[loc]] <- if_else(alcohol_deaths_latest[[loc]] > scot_alcohol_deaths, "higher", "lower")
 
+}
 
 ##### 2d Bowel Screening Uptake #####
 
@@ -299,30 +284,25 @@ bowel_screening_bar
 
 ## Numbers for text
 
-bowel_screening_latest <- filter(
-  bowel_screening,
-  year == max(bowel_screening$year) &
-    (area_name == LOCALITY & area_type == "Locality")
-)$measure
-
-bowel_screening_earliest <- filter(
-  bowel_screening,
-  (year == min(bowel_screening$year)) &
-    (area_name == LOCALITY & area_type == "Locality")
-)$measure
-
-bowel_screening_change <- abs((bowel_screening_latest - bowel_screening_earliest) / bowel_screening_earliest * 100)
-bowel_screening_change_word <- if_else(bowel_screening_latest > bowel_screening_earliest,
-  "increase", "decrease"
-)
-
-
+bowel_screening_latest <- numbers_for_text(bowel_screening)
+bowel_screening_earliest <- numbers_for_text_min(bowel_screening)
 scot_bowel_screening <- filter(
   bowel_screening,
   year == max(bowel_screening$year) & area_name == "Scotland"
 )$measure
 
-bowel_screening_diff_scot <- if_else(bowel_screening_latest > scot_bowel_screening, "higher", "lower")
+bowel_screening_change <- list()
+bowel_screening_change_word <- list()
+bowel_screening_diff_scot <- list()
+
+for (loc in locality_list){
+ bowel_screening_change[[loc]] <- abs((bowel_screening_latest[[loc]] - bowel_screening_earliest[[loc]]) / bowel_screening_earliest[[loc]] * 100)
+ bowel_screening_change_word[[loc]] <- if_else(bowel_screening_latest[[loc]] > bowel_screening_earliest[[loc]],
+  "increase", "decrease"
+)
+ bowel_screening_diff_scot[[loc]] <- if_else(bowel_screening_latest[[loc]] > scot_bowel_screening, "higher", "lower")
+ 
+}
 
 
 ############################### 3) CODE FOR SUMMARY TABLE ###############################
