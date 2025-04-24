@@ -116,7 +116,7 @@ Table `r y` provides the average life expectancy for men and women in different 
 
 \newline
 
-```{r life_exp_table, echo = FALSE}
+```{r life_exp_table, echo = FALSE, warning=FALSE}
 knitr::kable(transpose_LET(life_exp_table))
 
 y <- y + 1
