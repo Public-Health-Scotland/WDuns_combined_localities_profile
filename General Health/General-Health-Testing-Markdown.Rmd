@@ -11,28 +11,22 @@ output:
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 options(kableExtra.auto_format = FALSE)
+```
 
-# Line below for testing only
-LOCALITY <- "Inverclyde East"
-# LOCALITY <- "Stirling City with the Eastern Villages Bridge of Allan and Dunblane"
-# LOCALITY <- "Ayr North and Former Coalfield Communities"
-# LOCALITY <- "Helensburgh and Lomond"
-# LOCALITY <- "City of Dunfermline"
-# LOCALITY <- "Skye, Lochalsh and West Ross"
-# LOCALITY <- "East Dunbartonshire West"
 
-# Set file path
-#source("Master RMarkdown Document & Render Code/Global Script.R")
+```{r producedata, include = FALSE}
+source(here::here("Master RMarkdown Document & Render Code","Locality Profiles parameter values.R"))
+source(here::here("General Health","3. General Health Outputs.R"))
+```
 
-#lp_path <- "/conf/LIST_analytics/West Dunbartonshire/Locality Profiles Combined/"
+
+```{r figbaselinevalue, include=F}
 
 x <- 1 # object for figure numbers
 y <- 1 # object for table numbers
+
 ```
 
-```{r produce_data, include = FALSE}
-source(here("General Health/3. General Health Outputs.R"))
-```
 
 ##### Page break
 
@@ -45,6 +39,8 @@ source(here("General Health/3. General Health Outputs.R"))
 For the most recent time period available^3^, **`r locality_list[1]` Locality** had:
 
 ```{r life_exp_text_loc1, echo = FALSE}
+life_exp_text <- list()
+life_exp_text2 <- list()
 if (is.na(avg_life_exp_latest_male[[1]])) {
   life_exp_text[[1]] <- "No data available for life expectancy."
   life_exp_text2[[1]] <- "No data available for life expectancy at locality level."
@@ -120,8 +116,8 @@ Table `r y` provides the average life expectancy for men and women in different 
 
 \newline
 
-```{r life_exp_table, echo = FALSE}
-knitr::kable(life_exp_table)
+```{r life_exp_table, echo = FALSE, warning=FALSE}
+knitr::kable(transpose_LET(life_exp_table))
 
 y <- y + 1
 ```
