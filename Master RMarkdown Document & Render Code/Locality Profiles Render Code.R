@@ -12,6 +12,7 @@ source(here::here("Master RMarkdown Document & Render Code", "Locality Profiles 
 
  # loop_env <- c(ls(), "loop_env")
 
+
   # 1. Loop through each locality to create the main body of the profiles and the summary table
 #  for (LOCALITY in locality_list) {
     # 1a) Source in all the scripts for a given LOCALITY

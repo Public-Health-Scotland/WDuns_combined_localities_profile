@@ -11,28 +11,22 @@ output:
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 options(kableExtra.auto_format = FALSE)
+```
 
-# Line below for testing only
-LOCALITY <- "Inverclyde East"
-# LOCALITY <- "Stirling City with the Eastern Villages Bridge of Allan and Dunblane"
-# LOCALITY <- "Ayr North and Former Coalfield Communities"
-# LOCALITY <- "Helensburgh and Lomond"
-# LOCALITY <- "City of Dunfermline"
-# LOCALITY <- "Skye, Lochalsh and West Ross"
-# LOCALITY <- "East Dunbartonshire West"
 
-# Set file path
-source("Master RMarkdown Document & Render Code/Global Script.R")
+```{r producedata, include = FALSE}
+source(here::here("Master RMarkdown Document & Render Code","Locality Profiles parameter values.R"))
+source(here::here("General Health","3. General Health Outputs.R"))
+```
 
-lp_path <- path("/conf/LIST_analytics/West Hub/02 - Scaled Up Work/RMarkdown/Locality Profiles")
+
+```{r figbaselinevalue, include=F}
 
 x <- 1 # object for figure numbers
 y <- 1 # object for table numbers
+
 ```
 
-```{r produce_data, include = FALSE}
-source("General Health/3. General Health Outputs.R")
-```
 
 ##### Page break
 
@@ -42,37 +36,73 @@ source("General Health/3. General Health Outputs.R")
 
 \newline
 
-For the most recent time period available^3^, `r LOCALITY` Locality had:
+For the most recent time period available^3^, **`r locality_list[1]` Locality** had:
 
-```{r life_exp_text, echo = FALSE}
-if (is.na(avg_life_exp_latest_male)) {
-  life_exp_text <- "No data available for life expectancy."
-  life_exp_text2 <- "No data available for life expectancy at locality level."
+```{r life_exp_text_loc1, echo = FALSE}
+life_exp_text <- list()
+life_exp_text2 <- list()
+if (is.na(avg_life_exp_latest_male[[1]])) {
+  life_exp_text[[1]] <- "No data available for life expectancy."
+  life_exp_text2[[1]] <- "No data available for life expectancy at locality level."
 } else {
-  life_exp_text <- glue("An average life expectancy of **{avg_life_exp_latest_male}** years for males and **{avg_life_exp_latest_fem}** years for females, compared to the national average of {scot_life_exp_male} and {scot_life_exp_fem} years of age respectively.")
-  life_exp_text2 <- glue("In the latest time period available from {latest_period_life_exp_loc} (5-year aggregate), the average life expectancy in {LOCALITY} locality was {avg_life_exp_latest_male} years for men, and {avg_life_exp_latest_fem} years for women. A 10-year time trend can be seen in figure {x}.")
+  life_exp_text[[1]] <- glue("An average life expectancy of **{avg_life_exp_latest_male[[1]]}** years for males and **{avg_life_exp_latest_fem[[1]]}** years for females, compared to the national average of {scot_life_exp_male} and {scot_life_exp_fem} years of age respectively.")
+  life_exp_text2[[1]] <- glue("In the latest time period available from {latest_period_life_exp_loc} (5-year aggregate), the average life expectancy in **{locality_list[1]} locality** was {avg_life_exp_latest_male[[1]]} years for men, and {avg_life_exp_latest_fem[[1]]} years for women. A 10-year time trend can be seen in figure {x}.")
 }
 ```
 
--   `r life_exp_text`
--   A death rate for ages 15 to 44 of **`r format_number_for_text(deaths_15_44_latest)`** deaths per 100,000 age-sex standardised population. This is `r deaths_15_44_diff_scot` than Scotland (`r format_number_for_text(scot_deaths_15_44)` deaths per 100,000)^4^.
--   **`r format_number_for_text(ltc_percent_total_latest)`%** of the locality's population with at least one long-term physical health condition. This is `r ltc_diff_scot` than Scotland (`r format_number_for_text(ltc_perc_scot)`%).
--   A cancer registration rate of **`r format_number_for_text(cancer_reg_rate_latest)`** registrations per 100,000 age-sex standardised population (compared to `r format_number_for_text(scot_cancer)` in Scotland), and an early death rate (\<75 years) from cancer of **`r format_number_for_text(early_deaths_cancer_rate_latest)`** per 100,000 age-sex standardised population (compared to `r format_number_for_text(scot_cancer_deaths)` in Scotland)^4^.
--   **`r format_number_for_text(adp_presc_latest)`%** of the population being prescribed medication for anxiety, depression, or psychosis. This is a `r adp_presc_diff_scot` proportion than Scotland (`r format_number_for_text(scot_adp_presc)`%).
+-   `r life_exp_text[[1]]`
+-   A death rate for ages 15 to 44 of **`r format_number_for_text(deaths_15_44_latest[[1]])`** deaths per 100,000 age-sex standardised population. This is `r deaths_15_44_diff_scot[[1]]` than Scotland (`r format_number_for_text(scot_deaths_15_44)` deaths per 100,000)^4^.
+-   **`r format_number_for_text(ltc_percent_total_latest[[1]])`%** of the locality's population with at least one long-term physical health condition. This is `r ltc_diff_scot[[1]]` than Scotland (`r format_number_for_text(ltc_perc_scot)`%).
+-   A cancer registration rate of **`r format_number_for_text(cancer_reg_rate_latest[[1]])`** registrations per 100,000 age-sex standardised population (compared to `r format_number_for_text(scot_cancer)` in Scotland), and an early death rate (\<75 years) from cancer of **`r format_number_for_text(early_deaths_cancer_rate_latest[[1]])`** per 100,000 age-sex standardised population (compared to `r format_number_for_text(scot_cancer_deaths)` in Scotland)^4^.
+-   **`r format_number_for_text(adp_presc_latest[[1]])`%** of the population being prescribed medication for anxiety, depression, or psychosis. This is a `r adp_presc_diff_scot[[1]]` proportion than Scotland (`r format_number_for_text(scot_adp_presc)`%).
+
+\newline
+
+For the most recent time period available^3^, **`r locality_list[2]` Locality** had:
+
+```{r life_exp_text_loc2, echo = FALSE}
+if (is.na(avg_life_exp_latest_male[[2]])) {
+  life_exp_text[[2]] <- "No data available for life expectancy."
+  life_exp_text2[[2]] <- "No data available for life expectancy at locality level."
+} else {
+  life_exp_text[[2]] <- glue("An average life expectancy of **{avg_life_exp_latest_male[[2]]}** years for males and **{avg_life_exp_latest_fem[[2]]}** years for females, compared to the national average of {scot_life_exp_male} and {scot_life_exp_fem} years of age respectively.")
+  life_exp_text2[[2]] <- glue("In the latest time period available from {latest_period_life_exp_loc} (5-year aggregate), the average life expectancy in **{locality_list[2]} locality** was {avg_life_exp_latest_male[[2]]} years for men, and {avg_life_exp_latest_fem[[2]]} years for women. A 10-year time trend can be seen in figure {x}.")
+}
+```
+
+-   `r life_exp_text[[2]]`
+-   A death rate for ages 15 to 44 of **`r format_number_for_text(deaths_15_44_latest[[2]])`** deaths per 100,000 age-sex standardised population. This is `r deaths_15_44_diff_scot[[2]]` than Scotland (`r format_number_for_text(scot_deaths_15_44)` deaths per 100,000)^4^.
+-   **`r format_number_for_text(ltc_percent_total_latest[[2]])`%** of the locality's population with at least one long-term physical health condition. This is `r ltc_diff_scot[[2]]` than Scotland (`r format_number_for_text(ltc_perc_scot)`%).
+-   A cancer registration rate of **`r format_number_for_text(cancer_reg_rate_latest[[2]])`** registrations per 100,000 age-sex standardised population (compared to `r format_number_for_text(scot_cancer)` in Scotland), and an early death rate (\<75 years) from cancer of **`r format_number_for_text(early_deaths_cancer_rate_latest[[2]])`** per 100,000 age-sex standardised population (compared to `r format_number_for_text(scot_cancer_deaths)` in Scotland)^4^.
+-   **`r format_number_for_text(adp_presc_latest[[2]])`%** of the population being prescribed medication for anxiety, depression, or psychosis. This is a `r adp_presc_diff_scot[[2]]` proportion than Scotland (`r format_number_for_text(scot_adp_presc)`%).
 
 \newline
 
 ### Life Expectancy
 
-`r life_exp_text2`
+`r life_exp_text2[[1]]`
 
 #### Figure `r x`: Average life expectancy in men and women over time. \newline
 
-```{r life_exp_trend, echo = FALSE, fig.width = 8, fig.height = 4.5, fig.cap = 'A line graph showing the trent for average life expectancy in the locality for male and female residents'}
-if (LOCALITY %in% check_missing_data_scotpho(life_exp)$area_name) {
+```{r life_exp_trend, echo = FALSE, fig.width = 8, fig.height = 4.5, fig.cap = 'A line graph showing the trend for average life expectancy in the locality for male and female residents'}
+if (locality_list[1] %in% check_missing_data_scotpho(life_exp)$area_name) {
   print("No data available for this locality")
 } else {
-  life_exp_trend
+  life_exp_trend[[1]]
+}
+
+x <- x + 1
+```
+
+`r life_exp_text2[[2]]`
+
+#### Figure `r x`: Average life expectancy in men and women over time. \newline
+
+```{r life_exp_trend2, echo = FALSE, fig.width = 8, fig.height = 4.5, fig.cap = 'A line graph showing the trend for average life expectancy in the locality for male and female residents'}
+if (locality_list[2] %in% check_missing_data_scotpho(life_exp)$area_name) {
+  print("No data available for this locality")
+} else {
+  life_exp_trend[[2]]
 }
 
 x <- x + 1
@@ -82,12 +112,12 @@ x <- x + 1
 
 Table `r y` provides the average life expectancy for men and women in different areas for the latest time period available.
 
-#### Table `r y`: Average life expectancy in years for the latest time periods (`r latest_period_life_exp_loc` aggregated years for the locality; `r latest_period_life_exp_otherareas` aggregated years for other areas).
+#### Table `r y`: Average life expectancy in years for the latest time periods (`r latest_period_life_exp_loc` aggregated years for locality; `r latest_period_life_exp_otherareas` aggregated years for other areas).
 
 \newline
 
-```{r life_exp_table, echo = FALSE}
-knitr::kable(life_exp_table)
+```{r life_exp_table, echo = FALSE, warning=FALSE}
+knitr::kable(transpose_LET(life_exp_table))
 
 y <- y + 1
 ```
@@ -96,13 +126,9 @@ Source: ScotPHO
 
 \newline
 
-`r if(HSCP == "Clackmannanshire and Stirling") {"Note that data is unavailable for Clackmannanshire & Stirling HSCP."}`
-
-\newline
-
 ### Deaths, aged 15 to 44
 
-The following chart shows a trend of death rates among people aged 15 to 44 per 100,000 age-sex standardised population^4^ by area. In the most recent aggregate time period available (`r latest_period_deaths_15_44`), the mortality rate in `r LOCALITY` locality was **`r format_number_for_text(deaths_15_44_latest)`** deaths per 100,000 population.
+The following chart shows a trend of death rates among people aged 15 to 44 per 100,000 age-sex standardised population^4^ by area. In the most recent aggregate time period available (`r latest_period_deaths_15_44`), the mortality rate in **`r locality_list[1]` locality** was **`r format_number_for_text(deaths_15_44_latest[[1]])`** deaths per 100,000 population, and the mortality rate in **`r locality_list[2]` locality** was **`r format_number_for_text(deaths_15_44_latest[[2]])`** deaths per 100,000 population. 
 
 #### Figure `r x`: Deaths aged 15 to 44 years by geographical area and over time. \newline
 
@@ -114,7 +140,7 @@ x <- x + 1
 
 ##### Page break
 
-Figure `r x` provides comparisons of deaths at ages 15 to 44 across all areas including other localities in `r HSCP` HSCP. In `r latest_period_deaths_15_44`, `r LOCALITY` had a `r deaths_15_44_diff_scot` rate than the rest of Scotland (`r format_number_for_text(deaths_15_44_latest)` compared to `r format_number_for_text(scot_deaths_15_44)` deaths per 100,000).
+Figure `r x` provides comparisons of deaths at ages 15 to 44 across all areas including other localities in `r HSCP` HSCP. In `r latest_period_deaths_15_44`, **`r locality_list[1]`** had a `r deaths_15_44_diff_scot[[1]]` rate than the rest of Scotland (`r format_number_for_text(deaths_15_44_latest[[1]])` compared to `r format_number_for_text(scot_deaths_15_44)` deaths per 100,000). **`r locality_list[2]`** had a `r deaths_15_44_diff_scot[[2]]` rate than the rest of Scotland (`r format_number_for_text(deaths_15_44_latest[[2]])` compared to `r format_number_for_text(scot_deaths_15_44)` deaths per 100,000). 
 
 #### Figure `r x`: Deaths at ages 15 to 44 by area for the latest time period available. \newline
 
@@ -130,15 +156,15 @@ x <- x + 1
 
 \newline
 
-In the financial year `r latest_year_ltc`, in `r LOCALITY` Locality, it is estimated that **`r format_number_for_text(ltc_percent_total_latest)`%** of the population had at least one physical long-term condition (LTC). These include cardiovascular, neurodegenerative, and respiratory conditions, as well as other organ conditions (namely liver disease and renal failure), arthritis, cancer, diabetes, and epilepsy. *Please note that estimates for this section are based on people who had contact with NHS services - see footnotes for further information and caveats on identifying LTCs.^5^*
+In the financial year `r latest_year_ltc`, in **`r locality_list[1]` Locality**, it is estimated that **`r format_number_for_text(ltc_percent_total_latest[[1]])`%** of the population had at least one physical long-term condition (LTC). In the financial year `r latest_year_ltc`, in **`r locality_list[2]` Locality**, it is estimated that **`r format_number_for_text(ltc_percent_total_latest[[2]])`%** of the population had at least one physical long-term condition (LTC). These include cardiovascular, neurodegenerative, and respiratory conditions, as well as other organ conditions (namely liver disease and renal failure), arthritis, cancer, diabetes, and epilepsy. *Please note that estimates for this section are based on people who had contact with NHS services - see footnotes for further information and caveats on identifying LTCs.^5^*
 
-```{r ltc_waffles, echo = FALSE, fig.width = 9, fig.height = 3.5, fig.cap = 'Infographic split by age group showing the number of people out of ten that have at least one LTC. The age groups shown are under 65, 65-74, 75-84, and over 85.'}
+```{r ltc_waffles, echo = FALSE, fig.width = 10, fig.height = 6.5, fig.cap = 'Infographic split by age group showing the number of people out of ten that have at least one LTC. The age groups shown are under 65, 65-74, 75-84, and over 85.'}
 ltc_waffles
 ```
 
 \newline
 
-The co-occurrence of two or more conditions, known as multi-morbidity, is broken down in Table `r y`, distinguishing between age groups. Overall, **`r format_number_for_text(ltc_multimorbidity_un65_perc)`**% of those under 65 have more than one LTC, compared to **`r format_number_for_text(ltc_multimorbidity_ov65_perc)`**% of those over 65.
+The co-occurrence of two or more conditions, known as multi-morbidity, is broken down in Table `r y`, distinguishing between age groups. Overall, in **`r locality_list[1]` Locality** **`r format_number_for_text(ltc_multimorbidity_un65_perc[[1]])`**% of those under 65 have more than one LTC, compared to **`r format_number_for_text(ltc_multimorbidity_ov65_perc[[1]])`**% of those over 65. In **`r locality_list[2]` Locality** **`r format_number_for_text(ltc_multimorbidity_un65_perc[[2]])`**% of those under 65 have more than one LTC, compared to **`r format_number_for_text(ltc_multimorbidity_ov65_perc[[2]])`**% of those over 65.
 
 #### Table `r y`: Multi-morbidity of physical long-term conditions by age group in `r latest_year_ltc`. \newline
 
@@ -152,12 +178,22 @@ y <- y + 1
 
 **Most common physical Long-Term Conditions (LTCs)**
 
-Below is a breakdown of the physical LTCs, for the financial year `r latest_year_ltc`. Figure `r x` shows the prevalence of different LTCs in each age group in `r LOCALITY` locality, and Table `r y` illustrates the five most prevalent physical LTCs across all ages at the locality, partnership, and Scotland levels.
+Below is a breakdown of the physical LTCs, for the financial year `r latest_year_ltc`. Figure `r x` and Figure `r x+1` show the prevalence of different LTCs in each age group in `r locality_list[1]` and `r locality_list[2]`, and Table `r y` illustrates the five most prevalent physical LTCs across all ages at the locality, partnership, and Scotland levels.
 
 #### Figure `r x`: The percentage of people with each physical LTC by age group. \newline
 
 ```{r ltc_types_plot, echo = FALSE, fig.width = 7.5, fig.height = 5, fig.cap = "A graph showing the prevalence of physical long term conditions by percentage of population for Under 65s and for Over 65s."}
-ltc_types_plot
+ltc_types_plot[[1]]
+
+x <- x + 1
+```
+
+^\*COPD:\ Chronic\ Obstructive\ Pulmonary\ Disease^
+
+#### Figure `r x`: The percentage of people with each physical LTC by age group. \newline
+
+```{r ltc_types_plot2, echo = FALSE, fig.width = 7.5, fig.height = 5, fig.cap = "A graph showing the prevalence of physical long term conditions by percentage of population for Under 65s and for Over 65s."}
+ltc_types_plot[[2]]
 
 x <- x + 1
 ```
@@ -168,7 +204,7 @@ x <- x + 1
 
 \newline
 
-```{r top5_ltc_table, echo = FALSE, fig.width = 7.5, fig.height = 3.5}
+```{r top5_ltc_table, echo = FALSE, fig.width = 8.5, fig.height = 3.5}
 top5_ltc_table
 
 y <- y + 1
@@ -178,7 +214,9 @@ Source: Source Linkage Files
 
 ### Cancer
 
-For the period `r latest_period_cancer_reg`, there were **`r format_number_for_text(cancer_reg_total_latest)`** new cancer registrations per year on average (a rate of **`r format_number_for_text(cancer_reg_rate_latest)`** registrations per 100,000 age-sex standardised population) in `r LOCALITY` locality. For the period `r latest_period_early_deaths_cancer`, there were also **`r format_number_for_text(early_deaths_cancer_rate_latest)`** early deaths per 100,000 from cancer in the locality, this is a **`r format_number_for_text(cancer_deaths_perc_change)`%** `r cancer_deaths_changeword` compared to the rate 10 years prior.
+For the period `r latest_period_cancer_reg`, there were **`r format_number_for_text(cancer_reg_total_latest[[1]])`** new cancer registrations per year on average (a rate of **`r format_number_for_text(cancer_reg_rate_latest[[1]])`** registrations per 100,000 age-sex standardised population) in **`r locality_list[1]` locality**. For the period `r latest_period_early_deaths_cancer`, there were also **`r format_number_for_text(early_deaths_cancer_rate_latest[[1]])`** early deaths per 100,000 from cancer in the locality, this is a **`r format_number_for_text(cancer_deaths_perc_change[[1]])`%** `r cancer_deaths_changeword` compared to the rate 10 years prior.
+
+For the period `r latest_period_cancer_reg`, there were **`r format_number_for_text(cancer_reg_total_latest[[2]])`** new cancer registrations per year on average (a rate of **`r format_number_for_text(cancer_reg_rate_latest[[2]])`** registrations per 100,000 age-sex standardised population) in **`r locality_list[2]` locality**. For the period `r latest_period_early_deaths_cancer`, there were also **`r format_number_for_text(early_deaths_cancer_rate_latest[[2]])`** early deaths per 100,000 from cancer in the locality, this is a **`r format_number_for_text(cancer_deaths_perc_change[[2]])`%** `r cancer_deaths_changeword` compared to the rate 10 years prior.
 
 #### Figure `r x`: Cancer registration rate over time and by area. \newline
 
@@ -200,7 +238,7 @@ x <- x + 1
 
 ### Hospitalisations by condition
 
-Patient hospitalisations can indicate how certain diseases have varying impacts on people's lives. In the latest time period available in `r LOCALITY`, the condition with the highest rate of hospitalisations was `r highest_hosp_disease$indicator`.
+Patient hospitalisations can indicate how certain diseases have varying impacts on people's lives. In the latest time period available in **`r locality_list[1]`**, the condition with the highest rate of hospitalisations was `r highest_hosp_disease[[1]]$indicator`. In the latest time period available in **`r locality_list[2]`**, the condition with the highest rate of hospitalisations was `r highest_hosp_disease[[2]]$indicator`.
 
 #### Table `r y`: Patient hospitalisations by condition and geographical area, age-sex standardised rates per 100,000.
 
@@ -214,7 +252,9 @@ y <- y + 1
 
 ### Anxiety, Depression and Psychosis (ADP) prescriptions
 
-In `r latest_period_adp_presc`, **`r format_number_for_text(adp_presc_latest)`%** of people were prescribed medication for anxiety, depression or psychosis in `r LOCALITY` Locality. This is a **`r format_number_for_text(adp_presc_perc_change)`% `r adp_presc_changeword`** from the rate 10 years prior in `r prev_period_adp_presc` which was `r format_number_for_text(adp_presc_earliest)`%.
+In `r latest_period_adp_presc`, **`r format_number_for_text(adp_presc_latest[[1]])`%** of people were prescribed medication for anxiety, depression or psychosis in `r locality_list[1]` Locality. This is a **`r format_number_for_text(adp_presc_perc_change[[1]])`% `r adp_presc_changeword[[1]]`** from the rate 10 years prior in `r prev_period_adp_presc` which was `r format_number_for_text(adp_presc_earliest[[1]])`%.
+
+In `r latest_period_adp_presc`, **`r format_number_for_text(adp_presc_latest[[2]])`%** of people were prescribed medication for anxiety, depression or psychosis in `r locality_list[2]` Locality. This is a **`r format_number_for_text(adp_presc_perc_change[[2]])`% `r adp_presc_changeword[[2]]`** from the rate 10 years prior in `r prev_period_adp_presc` which was `r format_number_for_text(adp_presc_earliest[[2]])`%.
 
 #### Figure `r x`: Anxiety, depression and psychosis prescriptions over time and by geographical area. \newline
 
@@ -226,7 +266,9 @@ x <- x + 1
 
 ##### Page break
 
-In `r latest_period_adp_presc`, `r LOCALITY` had a `r adp_presc_diff_scot` proportion of the population being prescribed ADP medication compared to the rest of Scotland (`r format_number_for_text(adp_presc_latest)`% compared to `r format_number_for_text(scot_adp_presc)`%).
+In `r latest_period_adp_presc`, **`r locality_list[1]`** had a `r adp_presc_diff_scot[[1]]` proportion of the population being prescribed ADP medication compared to the rest of Scotland (`r format_number_for_text(adp_presc_latest[[1]])`% compared to `r format_number_for_text(scot_adp_presc)`%).
+
+In `r latest_period_adp_presc`, **`r locality_list[2]`** had a `r adp_presc_diff_scot[[2]]` proportion of the population being prescribed ADP medication compared to the rest of Scotland (`r format_number_for_text(adp_presc_latest[[2]])`% compared to `r format_number_for_text(scot_adp_presc)`%).
 
 #### Figure `r x`: Percentage population prescribed medication for anxiety, depression and psychosis by area for the latest period available. \newline
 
