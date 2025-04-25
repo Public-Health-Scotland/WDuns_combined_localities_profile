@@ -278,6 +278,14 @@ numbers_for_text <- function(df, loc = locality_list, variable = "measure") {
     set_names(loc)
 }
 
+numbers_for_text_min <- function(df, loc = locality_list, variable = "measure") {
+  map(loc,
+      ~filter(df, area_name == .x, area_type == "Locality",
+              year == min(df$year)) %>% 
+        pull(variable))%>% 
+    set_names(loc)
+}
+
 numbers_for_text_earliest <- function(df, loc = locality_list, variable = "measure") {
   map(loc,
       ~filter(df, area_name == .x, area_type == "Locality",
@@ -285,6 +293,7 @@ numbers_for_text_earliest <- function(df, loc = locality_list, variable = "measu
         pull(variable))%>% 
     set_names(loc)
 }
+
 ## Time trend function for ScotPHO data ----
 
 # Creates a time trend for chosen locality, HSCP, HB and Scotland with confidence interval ribbons
@@ -419,7 +428,11 @@ scotpho_bar_chart <- function(data, chart_title, xaxis_title) {
   data_for_plot <- data %>%
     filter(year == max(year)) %>%
     filter(
+
       (area_name %in% c(locality_list) & area_type == "Locality") |
+
+    #  (area_name %in% c(locality_list, other_locs$hscp_locality) & area_type == "Locality") |
+
         (area_name == HSCP & area_type == "HSCP") |
         area_name == HB |
         area_name == "Scotland"

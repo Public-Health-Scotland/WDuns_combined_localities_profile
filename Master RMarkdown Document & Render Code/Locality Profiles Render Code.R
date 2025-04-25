@@ -2,6 +2,17 @@
 
 source(here::here("Master RMarkdown Document & Render Code", "Locality Profiles parameter values.R"))
 
+  # Loop to create the profiles for all the localities in the list
+
+  # There are several stages to the profiles:
+  # 1. Looping through each locality in the HSCP doing the following:
+  # 1a. Run each section script for that locality
+  # 1b. Run the Rmd for the main body of the profiles
+  # 1c. Run the Rmd for the summary tables
+
+ # loop_env <- c(ls(), "loop_env")
+
+
   # 1. Loop through each locality to create the main body of the profiles and the summary table
 #  for (LOCALITY in locality_list) {
     # 1a) Source in all the scripts for a given LOCALITY
